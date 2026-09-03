@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "notion": { "type": "http", "url": "https://mcp.notion.com/mcp" },
+    "gdrive": { "type": "http", "url": "https://drivemcp.googleapis.com/mcp/v1" },
+    "gsheets": { "type": "http", "url": "https://sheetsmcp.googleapis.com/mcp/v1" }
+  }
+}

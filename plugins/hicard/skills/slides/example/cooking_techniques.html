@@ -1,0 +1,468 @@
+<title>明日から使える料理のテクニック</title>
+
+<style>
+:root{
+  --bg:#EFEFE9;
+  --surface:#F7F7F3;
+  --ink:#1A1C1A;
+  --ink-2:#4E5450;
+  --ink-3:#868D88;
+  --rule:#D3D5CD;
+  --rule-soft:#E2E3DC;
+
+  --salt:#5E6F66;
+  --ice:#2C6389;
+  --heat:#B4441F;
+
+  /* 章扉の地色。文字用アクセントと違い、ライト・ダークで変えない */
+  --salt-bg:#5E6F66;
+  --ice-bg:#2C6389;
+  --heat-bg:#B4441F;
+
+  --on-acc:#F7F7F3;
+  --acc:var(--ink);
+
+  --f-disp:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+  --f-body:"Hiragino Kaku Gothic ProN","Yu Gothic",YuGothic,"Noto Sans JP",sans-serif;
+  --f-util:"Helvetica Neue",Helvetica,Arial,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --bg:#141614;
+    --surface:#1C1F1C;
+    --ink:#EBEDE8;
+    --ink-2:#A9AFA9;
+    --ink-3:#8B928B;
+    --rule:#32362F;
+    --rule-soft:#25291F;
+    --salt:#9BB0A4;
+    --ice:#6BA8CE;
+    --heat:#E4885F;
+    --on-acc:#F7F7F3;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#141614;
+  --surface:#1C1F1C;
+  --ink:#EBEDE8;
+  --ink-2:#A9AFA9;
+  --ink-3:#8B928B;
+  --rule:#32362F;
+  --rule-soft:#25291F;
+  --salt:#9BB0A4;
+  --ice:#6BA8CE;
+  --heat:#E4885F;
+  --on-acc:#F7F7F3;
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{
+  margin:0;
+  word-break:auto-phrase;
+  line-break:strict;
+  background:var(--bg);
+  color:var(--ink);
+  font-family:var(--f-body);
+  -webkit-font-smoothing:antialiased;
+  scroll-snap-type:y mandatory;
+  overflow-x:hidden;
+}
+
+/* progress rail */
+.rail{position:fixed;top:0;left:0;right:0;height:3px;z-index:50;background:var(--rule-soft)}
+.rail i{display:block;height:100%;width:0;background:var(--ink);transition:width .25s ease,background .4s ease}
+
+.deck{display:block}
+
+.slide{
+  min-height:100svh;
+  scroll-snap-align:start;
+  scroll-snap-stop:always;
+  display:grid;
+  align-content:center;
+  padding:clamp(28px,6vh,72px) clamp(24px,7vw,110px);
+  position:relative;
+  border-bottom:1px solid var(--rule-soft);
+}
+.slide[data-sec="salt"]{--acc:var(--salt);--acc-bg:var(--salt-bg)}
+.slide[data-sec="ice"]{--acc:var(--ice);--acc-bg:var(--ice-bg)}
+.slide[data-sec="heat"]{--acc:var(--heat);--acc-bg:var(--heat-bg)}
+
+.frame{width:min(1060px,100%);margin:0 auto;display:flex;flex-direction:column;gap:clamp(16px,2.4vh,30px)}
+
+/* slide number + section tag */
+.meta{
+  position:absolute;left:clamp(24px,7vw,110px);bottom:clamp(20px,4vh,44px);
+  display:flex;align-items:center;gap:12px;
+  font-family:var(--f-util);font-size:11px;letter-spacing:.16em;text-transform:uppercase;
+  color:var(--ink-3);
+}
+.meta b{font-weight:600;color:var(--acc);font-variant-numeric:tabular-nums}
+
+.eyebrow{
+  font-family:var(--f-util);font-size:clamp(10px,1.1vw,12px);
+  letter-spacing:.22em;text-transform:uppercase;color:var(--acc);font-weight:600;
+}
+
+h1{
+  font-family:var(--f-disp);font-weight:600;
+  font-size:clamp(30px,5.4vw,66px);line-height:1.25;letter-spacing:-.015em;
+  margin:0;text-wrap:balance;
+}
+h2{
+  font-family:var(--f-disp);font-weight:600;
+  font-size:clamp(23px,3.5vw,43px);line-height:1.4;letter-spacing:-.012em;
+  margin:0;text-wrap:balance;
+}
+.lede{font-size:clamp(14px,1.6vw,20px);line-height:1.8;color:var(--ink-2);max-width:34em;margin:0}
+.lede strong{color:var(--ink);font-weight:500}
+.big{font-family:var(--f-disp);font-size:clamp(21px,3.1vw,37px);line-height:1.45;margin:0;font-weight:600;letter-spacing:-.012em}
+.big em{font-style:normal;color:var(--acc)}
+h2 + .big{margin-top:clamp(8px,1.8vh,24px)}
+/* 見出しの無い1枚では .big が主役になる */
+.frame:not(:has(h2)):not(:has(h1)) .big{font-size:clamp(27px,4.9vw,58px);line-height:1.35}
+
+/* chapter divider slides */
+.chapter{background:var(--acc-bg)}
+.chapter .frame{gap:clamp(10px,1.6vh,20px)}
+.chapter h1{color:var(--on-acc);font-size:clamp(32px,6.2vw,76px)}
+.chapter .eyebrow{color:var(--on-acc);opacity:.72}
+.chapter .meta{color:var(--on-acc);opacity:.6}
+.chapter .meta b{color:var(--on-acc)}
+.chapter .sub{
+  font-family:var(--f-body);color:var(--on-acc);opacity:.78;
+  font-size:clamp(14px,1.6vw,20px);line-height:1.8;max-width:38em;margin:clamp(10px,2vh,22px) 0 0;
+}
+.chapter .num{
+  font-family:var(--f-util);font-weight:700;color:var(--on-acc);opacity:.28;
+  font-size:clamp(56px,12vw,140px);line-height:.8;letter-spacing:-.03em;
+}
+
+/* agenda */
+.agenda{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.agenda li{
+  display:flex;align-items:baseline;gap:clamp(16px,3vw,42px);
+  padding:clamp(14px,2.4vh,26px) 0;border-top:1px solid var(--rule);
+  font-family:var(--f-disp);font-weight:600;
+  font-size:clamp(20px,3.4vw,41px);line-height:1.35;letter-spacing:-.012em;
+}
+.agenda li:last-child{border-bottom:1px solid var(--rule)}
+.agenda span{
+  font-family:var(--f-util);font-size:clamp(11px,1.2vw,14px);font-weight:600;
+  letter-spacing:.14em;flex:none;min-width:2.2em;
+}
+.agenda li:nth-child(1) span{color:var(--salt)}
+.agenda li:nth-child(2) span{color:var(--ice)}
+.agenda li:nth-child(3) span{color:var(--heat)}
+
+/* definition rows */
+.rows{display:flex;flex-direction:column}
+.row{
+  display:grid;grid-template-columns:minmax(150px,.62fr) 2.8fr;gap:clamp(14px,2.4vw,36px);
+  padding:clamp(12px,2.2vh,22px) 0;border-top:1px solid var(--rule);align-items:baseline;
+}
+.rows .row:last-child{border-bottom:1px solid var(--rule)}
+.row dt{
+  font-family:var(--f-disp);font-weight:500;
+  font-size:clamp(14px,1.72vw,21px);line-height:1.5;color:var(--acc);margin:0;letter-spacing:-.01em;
+}
+.row dd{margin:0;font-size:clamp(13px,1.32vw,16px);line-height:1.8;color:var(--ink-2)}
+.row dd strong{color:var(--ink);font-weight:500}
+@media (max-width:640px){.row{grid-template-columns:1fr;gap:6px}}
+
+/* two-column good/bad */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:clamp(18px,4vw,54px)}
+@media (max-width:700px){.split{grid-template-columns:1fr;gap:22px}}
+.col h3{
+  margin:0 0 10px;font-family:var(--f-util);font-size:clamp(11px,1.2vw,13px);
+  letter-spacing:.18em;text-transform:uppercase;font-weight:700;
+  padding-bottom:10px;border-bottom:2px solid currentColor;
+}
+.col.ok h3{color:var(--ice)}
+.col.ng h3{color:var(--heat)}
+.col ul{list-style:none;margin:0;padding:0}
+.col li{
+  padding:clamp(7px,1.3vh,12px) 0;border-bottom:1px solid var(--rule-soft);
+  font-size:clamp(12px,1.22vw,15px);line-height:1.65;
+}
+.col li b{font-weight:500}
+.col li i{font-style:normal;color:var(--ink-3);font-size:.86em}
+
+/* pairs (掛け算) */
+.pairs{display:flex;flex-direction:column}
+.pair{
+  display:grid;grid-template-columns:minmax(140px,1fr) 1.6fr;gap:clamp(14px,3vw,40px);
+  align-items:baseline;padding:clamp(11px,2vh,20px) 0;border-top:1px solid var(--rule);
+}
+.pairs .pair:last-child{border-bottom:1px solid var(--rule)}
+.pair .dish{font-family:var(--f-disp);font-weight:500;font-size:clamp(14px,1.72vw,21px);color:var(--ink);letter-spacing:-.01em}
+.pair .mul{font-size:clamp(13px,1.35vw,17px);color:var(--ink-2);display:flex;align-items:baseline;gap:.7em;flex-wrap:wrap}
+.pair .mul .x{color:var(--acc);font-family:var(--f-util);font-weight:700;font-size:.9em}
+@media (max-width:640px){.pair{grid-template-columns:1fr;gap:4px}}
+
+/* callout */
+.note{
+  border-left:3px solid var(--acc);padding:2px 0 2px clamp(14px,2vw,22px);
+  font-size:clamp(13px,1.42vw,17px);line-height:1.85;color:var(--ink-2);max-width:52em;
+}
+.note strong{color:var(--ink);font-weight:500}
+
+/* steps */
+.steps{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.steps li{
+  display:grid;grid-template-columns:auto 1fr;gap:clamp(14px,2.6vw,32px);
+  align-items:baseline;padding:clamp(13px,2.4vh,24px) 0;border-top:1px solid var(--rule);
+}
+.steps li:last-child{border-bottom:1px solid var(--rule)}
+.steps .k{
+  font-family:var(--f-util);font-weight:700;font-size:clamp(12px,1.3vw,15px);
+  letter-spacing:.1em;color:var(--acc);min-width:2.4em;font-variant-numeric:tabular-nums;
+}
+.steps .t{font-family:var(--f-disp);font-weight:500;font-size:clamp(15px,1.9vw,24px);line-height:1.45;letter-spacing:-.01em}
+.steps .t small{display:block;font-family:var(--f-body);font-weight:400;font-size:clamp(12px,1.2vw,15px);color:var(--ink-2);margin-top:6px;letter-spacing:0}
+
+.hint{font-family:var(--f-util);font-size:12px;letter-spacing:.1em;color:var(--ink-3);text-transform:uppercase}
+
+/* nav hint */
+.keys{
+  position:fixed;right:clamp(20px,4vw,44px);bottom:clamp(20px,4vh,44px);z-index:50;
+  font-family:var(--f-util);font-size:11px;letter-spacing:.14em;color:var(--ink-3);
+  mix-blend-mode:difference;filter:invert(1) grayscale(1) opacity(.55);
+  transition:opacity .5s ease;pointer-events:none;
+}
+.keys.gone{opacity:0;pointer-events:none}
+:focus-visible{outline:2px solid var(--acc);outline-offset:3px}
+</style>
+
+<div class="rail"><i id="bar"></i></div>
+<div class="keys" id="keys">← / → で移動</div>
+
+<main class="deck">
+
+  <!-- S1 -->
+  <section class="slide" data-sec="heat">
+    <div class="frame">
+      <p class="eyebrow"><発表者名>の</p>
+      <h1>明日から使える<br>料理のテクニック</h1>
+    </div>
+    <div class="meta"><b>01</b></div>
+  </section>
+
+  <!-- S2 -->
+  <section class="slide chapter" data-sec="salt">
+    <div class="frame">
+      <div class="num">01</div>
+      <h1>生肉には<br>塩を振れ</h1>
+      <p class="sub"><strong>塩＝体に悪い</strong>。このイメージがあまりにも強い。<br>今まで人々は、塩を使って食べ物を保存してきた。適切な量であれば問題ない。</p>
+    </div>
+    <div class="meta"><b>02</b></div>
+  </section>
+
+  <!-- S3 -->
+  <section class="slide" data-sec="salt">
+    <div class="frame">
+      <h2>塩をふるべき理由</h2>
+      <dl class="rows">
+        <div class="row"><dt>日持ちする</dt><dd>水分が抜けて、<strong>微生物が活動しにくくなる</strong>。軽く振っただけで冷蔵4,5日持つようになる。</dd></div>
+        <div class="row"><dt>柔らかくなる</dt><dd>肉のタンパク質（ミオシン）が塩で溶けて、<strong>肉が柔らかくなる</strong>。ジューシーな仕上がりに。</dd></div>
+        <div class="row"><dt>うま味が立つ</dt><dd>塩気が肉全体に広がり、<strong>肉のうま味を感じやすくなる</strong>。大量の塩を用いれば熟成も可能。</dd></div>
+      </dl>
+    </div>
+    <div class="meta"><b>03</b></div>
+  </section>
+
+  <!-- S4 -->
+  <section class="slide" data-sec="salt">
+    <div class="frame">
+      <p class="big">300g に、<em>ひとつまみ</em>。</p>
+      <p class="note"><strong>怖かったら「これ薄いよな」くらいで大丈夫。</strong></p>
+    </div>
+    <div class="meta"><b>04</b></div>
+  </section>
+
+  <!-- S5 -->
+  <section class="slide chapter" data-sec="ice">
+    <div class="frame">
+      <div class="num">02</div>
+      <h1>冷凍庫を<br>味方につけろ</h1>
+    </div>
+    <div class="meta"><b>05</b></div>
+  </section>
+
+  <!-- S6 -->
+  <section class="slide" data-sec="ice">
+    <div class="frame">
+      <h2>冷蔵庫は「毎日買い物する人」<br>向けにできている</h2>
+      <p class="lede"><strong>今の冷蔵庫の形は、専業主婦が当たり前だった時代の設計。</strong>冷蔵室が広くて冷凍室が小さいのは、<strong>毎日買って毎日使う</strong>前提だから。</p>
+    </div>
+    <div class="meta"><b>06</b></div>
+  </section>
+
+  <!-- S7 -->
+  <section class="slide" data-sec="ice">
+    <div class="frame">
+      <h2>迷ったら冷凍でいい</h2>
+      <p class="note">使い切れずに<strong>捨てるほうが、よっぽど損をしている</strong>。</p>
+    </div>
+    <div class="meta"><b>07</b></div>
+  </section>
+
+  <!-- S8 -->
+  <section class="slide" data-sec="ice">
+    <div class="frame">
+      <h2>冷凍していいもの / だめなもの</h2>
+      <div class="split">
+        <div class="col ok">
+          <h3>向く</h3>
+          <ul>
+            <li><b>肉・魚</b> <i>下味をつけてから</i></li>
+            <li><b>ごはん・パン</b></li>
+            <li><b>きのこ</b> <i>うま味が増える</i></li>
+            <li><b>ねぎ・生姜・にんにく</b></li>
+            <li><b>だし・スープ</b></li>
+            <li><b>バター・チーズ</b></li>
+          </ul>
+        </div>
+        <div class="col ng">
+          <h3>向かない</h3>
+          <ul>
+            <li><b>こんにゃく</b> <i>水が抜けてスカスカになる</i></li>
+            <li><b>豆腐</b> <i>凍み豆腐になる</i></li>
+            <li><b>生のレタス・きゅうり</b> <i>砕ける</i></li>
+            <li><b>大根・ごぼう</b> <i>ぼそぼそになる</i></li>
+            <li><b>ゆで卵</b> <i>白身がゴムになる</i></li>
+            <li><b>マヨネーズ・生クリーム</b> <i>分離する</i></li>
+          </ul>
+        </div>
+      </div>
+      <p class="note"><strong>見分け方：食感が持ち味のものは、冷凍に向かない。</strong><br>シャキシャキ・プリプリ・なめらか。それを目当てに食べているものは、凍らせると別物になる。</p>
+    </div>
+    <div class="meta"><b>08</b></div>
+  </section>
+
+  <!-- S9 -->
+  <section class="slide" data-sec="ice">
+    <div class="frame">
+      <h2>解凍は案外適当でも大丈夫</h2>
+      <p class="lede">冷蔵庫でゆっくり解凍が一番だけど、<strong>急ぐ場合は気にせずフライパンへ</strong>。</p>
+    </div>
+    <div class="meta"><b>09</b></div>
+  </section>
+
+  <!-- S10 -->
+  <section class="slide chapter" data-sec="heat">
+    <div class="frame">
+      <div class="num">03</div>
+      <h1>困ったら<br>複雑にしろ</h1>
+    </div>
+    <div class="meta"><b>10</b></div>
+  </section>
+
+  <!-- S11 -->
+  <section class="slide" data-sec="heat">
+    <div class="frame">
+      <h2>人は複雑さを「うまい」と感じる</h2>
+      <dl class="rows">
+        <div class="row"><dt>7〜8倍</dt><dd>グルタミン酸（昆布・トマト・チーズ）<strong>×</strong> イノシン酸（肉・魚・かつお節）</dd></div>
+        <div class="row"><dt>約30倍</dt><dd>そこにグアニル酸（干し椎茸）を足す</dd></div>
+      </dl>
+    </div>
+    <div class="meta"><b>11</b></div>
+  </section>
+
+  <!-- S12 -->
+  <section class="slide" data-sec="heat">
+    <div class="frame">
+      <h2>定番料理は、すでに掛け算になっている</h2>
+      <div class="pairs">
+        <div class="pair"><div class="dish">合わせだし</div><div class="mul">昆布 <span class="x">×</span> かつお節</div></div>
+        <div class="pair"><div class="dish">ミートソース</div><div class="mul">トマト <span class="x">×</span> ひき肉</div></div>
+        <div class="pair"><div class="dish">カルボナーラ</div><div class="mul">チーズ <span class="x">×</span> 豚肉</div></div>
+        <div class="pair"><div class="dish">中華スープ</div><div class="mul">干し椎茸 <span class="x">×</span> 鶏</div></div>
+      </div>
+      <p class="note"><strong>いま作っている料理に、逆の系統をひとつ足すだけ。</strong></p>
+    </div>
+    <div class="meta"><b>12</b></div>
+  </section>
+
+  <!-- S13 -->
+  <section class="slide" data-sec="heat">
+    <div class="frame">
+      <h2>味だけじゃない</h2>
+      <dl class="rows">
+        <div class="row"><dt>香り</dt><dd>仕上げの油・こしょう・柑橘・ハーブ・焦がし・生のままで</dd></div>
+        <div class="row"><dt>食感</dt><dd>火入れ加減・切り方・サイズ</dd></div>
+        <div class="row"><dt>温度</dt><dd>たとえば、カレーライスのライスは熱すぎない方がいい</dd></div>
+      </dl>
+    </div>
+    <div class="meta"><b>13</b></div>
+  </section>
+
+  <!-- S14 -->
+  <section class="slide" data-sec="heat">
+    <div class="frame">
+      <h2>シンプルな料理ほど<br>難しいのはこれが理由</h2>
+      <p class="lede"><strong>素材が2つしかない料理は、複雑さを足す場所が無い。</strong>だから、素材そのものと火の入れ方だけで勝負することになる。</p>
+      <p class="big"><em>要素を増やせばおいしくなる。</em></p>
+    </div>
+    <div class="meta"><b>14</b></div>
+  </section>
+
+  <!-- S15 -->
+  <section class="slide">
+    <div class="frame">
+      <h1>みなさん、<br>良い料理ライフを。</h1>
+    </div>
+    <div class="meta"><b>15</b></div>
+  </section>
+
+</main>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var bar = document.getElementById('bar');
+  var keys = document.getElementById('keys');
+  var current = 0;
+
+  var accents = {salt:'--salt', ice:'--ice', heat:'--heat'};
+  function paint(i){
+    current = i;
+    bar.style.width = ((i+1)/slides.length*100) + '%';
+    var sec = slides[i].getAttribute('data-sec');
+    var v = sec && accents[sec]
+      ? getComputedStyle(document.documentElement).getPropertyValue(accents[sec])
+      : getComputedStyle(document.documentElement).getPropertyValue('--ink');
+    bar.style.background = v.trim();
+  }
+
+  if ('IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){
+        if (e.isIntersecting) paint(slides.indexOf(e.target));
+      });
+    }, {threshold: 0.5});
+    slides.forEach(function(s){ io.observe(s); });
+  }
+  paint(0);
+
+  function go(n){
+    n = Math.max(0, Math.min(slides.length-1, n));
+    slides[n].scrollIntoView({behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth'});
+  }
+
+  var hid = false;
+  document.addEventListener('keydown', function(e){
+    var k = e.key;
+    if (k==='ArrowRight' || k==='ArrowDown' || k===' ' || k==='PageDown'){ e.preventDefault(); go(current+1); }
+    else if (k==='ArrowLeft' || k==='ArrowUp' || k==='PageUp'){ e.preventDefault(); go(current-1); }
+    else if (k==='Home'){ e.preventDefault(); go(0); }
+    else if (k==='End'){ e.preventDefault(); go(slides.length-1); }
+    else return;
+    if (!hid){ hid = true; keys.classList.add('gone'); }
+  });
+  setTimeout(function(){ if(!hid) keys.classList.add('gone'); }, 6000);
+})();
+</script>

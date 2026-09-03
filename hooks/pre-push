@@ -1,0 +1,57 @@
+#!/bin/bash
+# push する前に (1) main への直接 push を止め (2) 中身に鍵が無いか見る。
+# 一時的に飛ばす: git push --no-verify
+#
+# 有効化: git config core.hooksPath hooks
+# 元実装: hicard-inc/claude の hooks/pre-push を汎用化したもの
+
+REPO_DIR="$(git rev-parse --show-toplevel)"
+CHECKER="$REPO_DIR/hooks/check_secrets.py"
+# 1ファイルの上限KB。0=無効。素材（動画・画像）を置くリポジトリは 0 のままにする。
+# ドキュメント中心のリポジトリは 1024 などにするとよい。
+MAX_KB=0
+FAILED=0
+
+# 既定ブランチ名を remote から引く（main / master どちらでも動く）
+DEFAULT_BRANCH="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')"
+[ -z "$DEFAULT_BRANCH" ] && DEFAULT_BRANCH=main
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+  [ "$local_sha" = "0000000000000000000000000000000000000000" ] && continue
+  case "$remote_ref" in refs/tags/*) continue ;; esac
+
+  # ── (1) 既定ブランチへの直接 push を止める ──────────────────
+  if [ "$remote_ref" = "refs/heads/$DEFAULT_BRANCH" ]; then
+    echo ""
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    echo "  $DEFAULT_BRANCH には直接 push できません。"
+    echo ""
+    echo "  ブランチを切って Pull Request にしてください。"
+    echo "    git switch -c 自分の名前/やったこと"
+    echo "    git push -u origin HEAD"
+    echo "    gh pr create --fill"
+    echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+    exit 1
+  fi
+
+  # ── (2) push する範囲の中身を見る ──────────────────────────
+  if [ "$remote_sha" = "0000000000000000000000000000000000000000" ]; then
+    BASE="$(git merge-base "origin/$DEFAULT_BRANCH" "$local_sha" 2>/dev/null)"
+    if [ -n "$BASE" ]; then RANGE="$BASE..$local_sha"; else RANGE="$local_sha"; fi
+  else
+    RANGE="$remote_sha..$local_sha"
+  fi
+
+  if [ -f "$CHECKER" ]; then
+    if ! python3 "$CHECKER" --range "$RANGE" --quiet --max-kb "$MAX_KB"; then FAILED=1; fi
+  else
+    echo "⚠ $CHECKER が見つかりません。鍵チェックを飛ばしました"
+  fi
+done
+
+if [ "$FAILED" = "1" ]; then
+  echo ""
+  echo "✗ push を中止しました。直してからやり直してください（緊急時は git push --no-verify）"
+  exit 1
+fi
+exit 0

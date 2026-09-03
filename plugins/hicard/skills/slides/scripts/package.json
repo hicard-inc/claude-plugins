@@ -1,0 +1,9 @@
+{
+  "name": "hicard-slides-scripts",
+  "private": true,
+  "description": "slides skill の整形・描画スクリプトの依存。初回だけ npm install --prefix このディレクトリ",
+  "dependencies": {
+    "markdown-it": "^14.1.0",
+    "playwright-core": "^1.50.0"
+  }
+}

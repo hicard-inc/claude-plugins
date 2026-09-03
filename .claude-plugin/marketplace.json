@@ -1,0 +1,17 @@
+{
+  "$schema": "https://claude.ai/schemas/marketplace.json",
+  "name": "hicard-plugins",
+  "owner": { "name": "hicard", "url": "https://github.com/hicard-inc" },
+  "description": "株式会社hicard の Claude Code 設定（Skill・MCP）の配布元",
+  "plugins": [
+    {
+      "name": "hicard",
+      "source": "./plugins/hicard",
+      "displayName": "hicard",
+      "description": "hicard メンバー共通の Skill と MCP 設定（セットアップ・調査・スライド・タスク確認）",
+      "category": "productivity",
+      "author": { "name": "hicard" },
+      "version": "0.1.0"
+    }
+  ]
+}

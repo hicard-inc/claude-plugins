@@ -189,7 +189,10 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 - 始めるとき  ターミナルで claude
 - あとは普通に話しかけてください。保存も共有も私がやります
 
-月に1回くらい  /plugin update hicard@hicard-plugins  を実行してください（新しい手順が入ります）。
+月に1回くらい、Claude Code の中で次の2行を実行してください（新しい手順が入ります）。
+  /plugin marketplace update hicard-plugins
+  /plugin update hicard@hicard-plugins
+そのあと /exit して立ち上げ直すところまでが一組です。
 ```
 
 ## 相手が「エラーが出た」と言ってきたら

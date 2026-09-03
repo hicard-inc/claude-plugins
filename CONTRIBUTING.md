@@ -58,7 +58,19 @@ private だからといって以下は入れない。**一度コミットする�
 | 再読み込みされる Skill 全体 | **25,000トークン** | 配っている Skill の合計がこれを超えると、どれかが落ちる |
 | 参照資料 | **制限なし** | 読まれるまで0トークンなので大きくてよい |
 
-**新しい Skill を足したら、合計トークンを測り直す。**目安は日本語1文字≒1トークン弱。
+**新しい Skill を足したら、測り直す。**目安で済ませない：
+
+```bash
+claude plugin details hicard    # 常時コストと、スキルごとの呼び出し時コストが出る
+```
+
+現状の実測（0.1.1）。**常時 ~314 トークン**、呼び出し時は setup ~4.4k / slides ~4.3k /
+research ~3k / tasks ~2.2k ＝合計 ~13.9k で、上限 25,000 の内側。
+
+🔴 **`plugin.json` の `version` を上げないと、この数字も配布物も更新されない。**
+`claude plugin update` は**版番号を見て判断する**ので、中身を直しただけでは
+`already at the latest version` と言って何もしない。
+**内容を変えたら `plugin.json` と `marketplace.json` の両方の `version` を上げる**（片方だけだと食い違う）。
 
 ---
 
@@ -127,7 +139,16 @@ ToolSearch  query: "+notion query data sources users"
 2. **シェル・JS は構文チェックを通す**（`bash -n` / `node --check`）
 3. **`${CLAUDE_PLUGIN_ROOT}` を除いた参照が実在するか**を確認する
 4. **禁止語をスキャンする**（人名・報酬・契約・案件名）
-5. **自分の環境に入れ直して、実際に動かす**
+5. **`version` を上げる**（`plugin.json` と `marketplace.json` の両方）
+6. **自分の環境に入れ直して、実際に動かす**
+
+```bash
+claude plugin validate .                        # marketplace の検証
+claude plugin validate plugins/hicard           # plugin 単体の検証
+claude plugin marketplace update hicard-plugins # 取り直す
+claude plugin update hicard@hicard-plugins      # 入れ直す（restart が要る）
+claude plugin details hicard                    # 構成とトークンを見る
+```
 
 ```bash
 # 4 と 3 をまとめて。リポジトリ直下で実行する

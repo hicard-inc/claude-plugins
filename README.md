@@ -27,10 +27,14 @@ Claude Code の plugin marketplace として動く。
 ## 更新（月1回くらい）
 
 ```
+/plugin marketplace update hicard-plugins
 /plugin update hicard@hicard-plugins
 ```
 
-🔴 **更新だけでは差し替わらない。**動いているセッションは古いまま走り続ける。
+**2行で一組。**1行目で配布元を取り直し、2行目で入れ直す。
+1行目を飛ばすと、**新しい版が出ていても `already at the latest version` と言われる。**
+
+🔴 **さらに、更新だけでは差し替わらない。**動いているセッションは古いまま走り続ける。
 **`/exit` → `claude`（または `/reload-plugins`）までが一組。**
 
 ## 中身

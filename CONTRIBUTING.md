@@ -72,6 +72,9 @@ research ~3k / tasks ~2.2k ＝合計 ~13.9k で、上限 25,000 の内側。
 `already at the latest version` と言って何もしない。
 **内容を変えたら `plugin.json` と `marketplace.json` の両方の `version` を上げる**（片方だけだと食い違う）。
 
+**版を上げなくてよいのは `plugins/` の外だけ**（この `CONTRIBUTING.md` と直下の `README.md`）。
+配布物に入らないので、直しても各自の環境には影響しない。
+
 ---
 
 ## 3. 配布可否の3関門（全部通らないものは配らない）

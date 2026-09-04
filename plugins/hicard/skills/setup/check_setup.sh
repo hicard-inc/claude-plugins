@@ -80,20 +80,26 @@ else
 fi
 
 echo ""
-echo "【任意】"
-if command -v node >/dev/null 2>&1; then
-  row "・" "Node.js" "$(node --version)（スライドの整形スクリプトに使う）"
+echo "【/setup には要らないが、/slides には必須】"
+# 🔴 「任意」と書くと、/slides を使う人が入れずに始めて node: command not found で止まる。
+#    /setup に要らない = 任意 ではない。どちらの意味かを行に書く。
+if command -v node >/dev/null 2>&1 && command -v npm >/dev/null 2>&1; then
+  row "・" "Node.js / npm" "$(node --version) / $(npm --version)"
+elif command -v node >/dev/null 2>&1; then
+  row "・" "Node.js / npm" "node $(node --version) はあるが npm が無い → /slides の画像化が落ちる"
 else
-  row "・" "Node.js" "未インストール。スライド作成で画像化・太字チェックを使うときだけ必要"
+  row "・" "Node.js / npm" "未インストール。🔴 /slides を使うなら必須（brew install node か nodejs.org の LTS）"
 fi
 
 echo ""
 echo "【接続（このスクリプトでは判定できない。Claude がツールを呼んで確認する）】"
 info "Notion"       "notion-get-users user_id:self を呼ぶ。認証エラーなら出てくる URL で認可する"
-info "Google Drive" "Drive の検索ツールを query:\"owner = 'me'\" で呼び、返る owner を読む"
+info "Google Drive" "検索ツールを ToolSearch し、query:\"owner = 'me'\" で呼んで返る owner を読む"
 echo "   🔴 Notion は必ず「hicard」ワークスペースを選ぶ。個人側を選ぶと空になる。"
 echo "   🔴 Google は Drive に招待されているアカウント。@hicard.studio とは限らない"
 echo "      （個人 Gmail で招待されている人が実在する）。違う方で認可すると、接続は成功するのに中身が空になる。"
+echo "   🔴 ドライブはこの plugin では配っていない（0.1.7 で外した）。claude.ai のコネクタで各自が有効にする。"
+echo "      検索ツールが1つも無いときは本人の権限の問題ではない → skills/setup/troubleshooting.md"
 echo "   🔴 「Connected」で終わらせない。実際に1件読めることまで確認する。"
 
 echo ""

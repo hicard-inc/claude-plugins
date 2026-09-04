@@ -27,8 +27,18 @@ claude plugin install hicard@hicard-plugins
 🔴 **プラグインは道具しか配れない。**Claude Code の仕様上、plugin から `CLAUDE.md` と
 許可設定（`permissions`）は配布できないので、**ルールはこの経路で入れる**。
 
-> private リポジトリなので、`marketplace add` には GitHub の認証が必要。
-> 通らないときは `gh auth login` を実行する。
+**インストール先は user スコープでも local スコープでも構わない。**
+`~/.claude/settings.json` を触りたくない人は、そのプロジェクトの `.claude/settings.local.json`
+に入る local スコープでよい（2026-09-05 実測で両方通る）。
+
+### 前提条件（🔴 `gh auth login` では足りない）
+
+| | 何が要るか | 無いとどうなるか |
+|---|---|---|
+| **SSH 鍵** | GitHub に登録済みの SSH 鍵 | 🔴 **`marketplace add` は `git@github.com:...` で clone する**（2026-09-05 実測）。`gh` の認証は https なので効かず、`Permission denied (publickey)` で止まる。`ssh -T git@github.com` が名前を返すことを先に確認する |
+| **2FA** | 🔴 **認証アプリかパスキー。**hicard-inc は「セキュアな2FA必須」で **SMS は不可** | Org のリポジトリ操作が **403** になる（2026-09-05 実測）。**管理者側では直せない。**本人が GitHub の設定で切り替える |
+| **collaborator** | `claude-plugins` への read 権限 | `Repository not found` |
+| **Node.js / npm** | `/slides` を使うときだけ | `node: command not found`。`/setup` には要らない |
 
 ## 更新（月1回くらい）
 
@@ -84,12 +94,36 @@ claude plugin uninstall <plugin>@<marketplace>
 | 名前 | 実体 | 認証 |
 |---|---|---|
 | `notion` | `https://mcp.notion.com/mcp` | **各自の OAuth**。鍵は配らない |
-| `gdrive` | `https://drivemcp.googleapis.com/mcp/v1` | **各自の OAuth**。鍵は配らない |
-| `gsheets` | `https://sheetsmcp.googleapis.com/mcp/v1` | **各自の OAuth**。鍵は配らない |
 
-🔴 **3つとも本人のアカウントとして入る。**サービスアカウント鍵・Notion Integration トークンは
+🔴 **本人のアカウントとして入る。**サービスアカウント鍵・Notion Integration トークンは
 **この配布物に一切含まれない**（理由は [plugins/hicard/skills/setup/access_model.md](plugins/hicard/skills/setup/access_model.md)）。
 見える範囲は本人の権限そのままなので、**この plugin を入れても新しい権限は増えない。**
+
+### 🔴 Google ドライブ・スプレッドシートは配れない（0.1.7 で外した）
+
+0.1.6 まで `gdrive`（`drivemcp.googleapis.com`）と `gsheets`（`sheetsmcp.googleapis.com`）を
+同梱していたが、**誰の環境でも一度も繋がっていなかった。**
+2026-09-05 に2台（zono・ishikawa）で `claude mcp list` が同じものを返す：
+
+```
+plugin:hicard:gdrive:  ✘ Failed to connect — Incompatible auth server: does not support dynamic client registration
+plugin:hicard:gsheets: ✘ Failed to connect — Incompatible auth server: does not support dynamic client registration
+```
+
+Google の MCP は**事前登録された OAuth クライアント**を要求し、動的登録（DCR）を受け付けない。
+
+**claude.ai の「コネクタ」なら通る**（Anthropic が登録済みのクライアントを使う）。
+🔴 **ただしその経路は plugin から配れない。**`.mcp.json` に書ける `type` は
+`stdio` / `sse` / `http`（`streamable-http`）の**3種だけ**で、コネクタが使う内部の種類は書けない
+（Claude Code 2.1.260 で実測）。
+
+→ **ドライブは各自が claude.ai 側でコネクタを有効にする。**`/setup` は
+検索ツールが在るかを見て、無ければ**本人の権限の問題ではないと明示して管理者へ回す。**
+
+事前登録クライアントを書く道は残っている（`.mcp.json` の `oauth` は
+`clientId` / `clientSecret` / `clientSecretHelper` / `authorizationUrl` / `tokenUrl` / `scope` 等を取る）。
+**ただし Google が第三者にこの用途のクライアント登録を開放しているかは未確認**で、
+`clientSecret` を配布物に入れることになるため採らなかった。
 
 ## 構成
 
@@ -98,7 +132,7 @@ RULES.md                            ← 運用ルール。/setup が ~/.claude/r
 .claude-plugin/marketplace.json     ← marketplace の定義
 plugins/hicard/
   .claude-plugin/plugin.json        ← plugin の定義
-  .mcp.json                         ← 配る MCP サーバー
+  .mcp.json                         ← 配る MCP サーバー（notion のみ）
   skills/<名前>/SKILL.md            ← 本体。補助ファイルは同じフォルダに置く
 hooks/                              ← pre-push hook の配布物（下記）
 ```

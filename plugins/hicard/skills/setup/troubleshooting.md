@@ -26,7 +26,11 @@
 | **`/plugin update ...` と打ったら一覧が開いただけ** | 🔴 **`/plugin` は引数を取らない**（2.1.260 実測）。VSCode 拡張では `/plugin` 自体が使えない | **ターミナルで `claude plugin update hicard@hicard-plugins`。開いた一覧はそのまま閉じる**（下の🔴を読む） |
 | **知らない Skill が増えている・常時トークンが増えた** | 🔴 **`/plugin` の一覧で Enter を押してインストールしてしまった**（2026-09-04 実測） | `claude plugin list` で確認し、`claude plugin uninstall <plugin>@<marketplace>` で外す |
 | **Claude が秘密鍵（`.env` / `google_credentials.json`）を要求してくる** | 鍵を全員に配っていた頃のルールで動いている | プラグインを更新して再起動する。**鍵は要らない**（→ `access_model.md`） |
-| `marketplace add` が権限エラーになる | private リポジトリへの git 認証が通っていない | `gh auth login` を実行するか、GitHub の認証情報を git に登録する |
+| **`marketplace add` が `Permission denied (publickey)`** | 🔴 **`marketplace add` は SSH で clone する**（`git@github.com:...`・2026-09-05 実測）。**`gh auth login` は https なので効かない** | GitHub に SSH 鍵を登録する（`ssh-keygen -t ed25519` → `gh ssh-key add ~/.ssh/id_ed25519.pub`）。**`ssh -T git@github.com` が名前を返すまで確認する** |
+| **`gh` は通っているのに 403 が出る**（`gh repo view` 等） | 🔴 **hicard-inc は「セキュアな2FA必須」で SMS は不可。**SMS だけの人は Org のリポジトリに一切触れない（2026-09-05 実測） | **本人が GitHub の2段階認証を認証アプリかパスキーに変える。**設定 → Password and authentication。**管理者側では直せない** |
+| `Repository not found` | まだ collaborator に入っていない | 管理者へ「`claude-plugins` に入れてください」 |
+| `marketplace add` が権限エラーになる（上のどれでもない） | private リポジトリへの git 認証が通っていない | `gh auth login` を実行するか、GitHub の認証情報を git に登録する |
+| **`~/.claude/settings.json` を触られたくない** | 既定は user スコープ | **local スコープでよい。**そのプロジェクトの `.claude/settings.local.json` に入るだけで、機能は同じ（2026-09-05 実測） |
 
 🔴 **更新だけでは直らない。閉じて開き直すまでが一組。**
 古いまま使うと、Claude は古いルールで動く。**本人にも Claude にも「古い」と気づく手立てが無い**（画面には何も出ない）。
@@ -58,8 +62,29 @@
 
 ## Google ドライブ
 
+### 🔴 なぜドライブは配れないのか（2026-09-05 実測・0.1.7 で外した）
+
+0.1.6 まで `.mcp.json` に `gdrive` / `gsheets` を同梱していたが、**誰の環境でも一度も繋がっていなかった。**
+zono と ishikawa の2台で `claude mcp list` が同じものを返す：
+
+```
+plugin:hicard:gdrive:  ✘ Failed to connect — Incompatible auth server: does not support dynamic client registration
+plugin:hicard:gsheets: ✘ Failed to connect — Incompatible auth server: does not support dynamic client registration
+```
+
+Google の MCP は**事前登録された OAuth クライアント**を要求し、動的登録（DCR）を受け付けない。
+claude.ai の「コネクタ」は Anthropic が登録済みのクライアントを使うので通るが、
+**その経路は plugin から配れない**（`.mcp.json` に書ける `type` は `stdio` / `sse` / `http` の3種だけで、
+コネクタが使う内部の種類は書けない。Claude Code 2.1.260 で実測）。
+
+→ **ドライブは claude.ai のコネクタで各自が有効にする。**この手順書からは配らない。
+⚠️ **claude.ai 側の画面の順番は未実測。**思い出しで案内せず、管理者に回す。
+
 | 症状 | 原因 | 対処 |
 |---|---|---|
+| **ドライブの検索ツールが1つも出てこない** | claude.ai のコネクタが有効になっていない | 本人に `/mcp` を打ってもらい `claude.ai Google Drive` の行があるか見せてもらう。無ければ管理者へ |
+| **`plugin:hicard:gdrive` が ✘ と出ている** | **0.1.6 以前の古い版**。0.1.7 で外した | `claude plugin marketplace update hicard-plugins` → `claude plugin update hicard@hicard-plugins` → 再起動 |
+| **繋がっているのにツールが無い** | 🔴 **セッションによって出る／出ないが実際にある**（2026-09-05 実測） | `/exit` → `claude` で入り直してもう一度見る。**1回で「未接続」と決めない** |
 | ドライブは繋がったのに hicard が見えない | **個人アカウントで許可してしまった。**許可の画面は、ブラウザにログイン中のアカウントを既定で使う | 下の「Google アカウントの繋ぎ直し」 |
 | **個人の Google アカウントも一緒に使いたい** | **できない。**Claude に繋げる Google アカウントは**1つだけ** | **Claude のログインは個人のままで構わない**（別物・**追加の課金もない**）。仕事で個人ドライブのファイルが要るときは、**フォルダを右クリック →「共有」→ 会社アドレスを編集者で追加**する。**フォルダごと共有すれば中身は全部読める**（あとから追加したものも） |
 | **切り替えたら個人ドライブが読めなくなった** | 正常。上と同じ理由 | **繋ぎ直す必要はない。**要るフォルダを上のやり方で共有する |
@@ -90,6 +115,14 @@
 > **フォルダごと共有すれば、中のファイルは全部読めます。**あとから追加したものも読めます。
 
 **「あとで気づいた」も普通に起きる。**そのときは同じ手順で共有すればよい（**繋ぎ直しは要らない**）。
+
+## スライド（`/slides`）が動かない
+
+| 症状 | 原因 | 対処 |
+|---|---|---|
+| `node: command not found` | 🔴 **`/slides` は Node.js が必須**（`check_setup.sh` では【任意】と出るが、それは `/setup` に要らないという意味） | Node.js を入れる（`brew install node`、または https://nodejs.org の LTS）。**`node --version` と `npm --version` の両方が返るまで確認する** |
+| `Cannot find module 'playwright-core'` | 依存が未インストール | `npm install --prefix "${CLAUDE_PLUGIN_ROOT}/skills/slides/scripts"` |
+| `Chromium が見つかりません` | 描画用ブラウザ本体が未インストール | `npx playwright install chromium`（初回だけ・約15秒・約560MB） |
 
 ## 会話中の操作
 

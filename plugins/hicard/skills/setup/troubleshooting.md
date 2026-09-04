@@ -20,15 +20,16 @@
 
 | 症状 | 原因 | 対処 |
 |---|---|---|
-| **Claude が `/setup` を知らない** | プラグインが未導入 | `/plugin marketplace add hicard-inc/claude-plugins` → `/plugin install hicard@hicard-plugins` → **`/exit` → `claude`** |
-| **Claude の言うことが手順書と違う** | プラグインが古い | `/plugin update hicard@hicard-plugins` → **`/exit` → `claude`** |
+| **Claude が `/setup` を知らない** | プラグインが未導入 | ターミナルで `claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins` → **`claude` で立ち上げ直す** |
+| **Claude の言うことが手順書と違う** | プラグインが古い | ターミナルで `claude plugin update hicard@hicard-plugins` → **`claude` で立ち上げ直す** |
 | 更新したのに変わらない | **動いているセッションは古いままで走り続ける** | `/exit` → `claude`。**更新と再起動までが一組**。`/reload-plugins` でも差し替わる |
+| **`/plugin update ...` と打ったら一覧が開いただけ** | 🔴 **`/plugin` は引数を取らない**（2.1.260 実測）。VSCode 拡張では `/plugin` 自体が使えない | **ターミナルで `claude plugin update hicard@hicard-plugins`**。対話ブラウザから操作しても構わない |
 | **Claude が秘密鍵（`.env` / `google_credentials.json`）を要求してくる** | 鍵を全員に配っていた頃のルールで動いている | プラグインを更新して再起動する。**鍵は要らない**（→ `access_model.md`） |
 | `marketplace add` が権限エラーになる | private リポジトリへの git 認証が通っていない | `gh auth login` を実行するか、GitHub の認証情報を git に登録する |
 
-🔴 **`/plugin update` だけでは直らない。閉じて開き直すまでが一組。**
+🔴 **更新だけでは直らない。閉じて開き直すまでが一組。**
 古いまま使うと、Claude は古いルールで動く。**本人にも Claude にも「古い」と気づく手立てが無い**（画面には何も出ない）。
-**月に1回は `/plugin update hicard@hicard-plugins` を実行する。**
+**月に1回は、ターミナルで `claude plugin update hicard@hicard-plugins` を実行する。**
 
 ## Notion
 

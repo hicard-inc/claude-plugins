@@ -58,8 +58,16 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py"
 | `OK  コピー` | 動くが**自動では更新されない。**更新のたびに `/setup` を打ち直す必要があると本人に伝える |
 | `NG` | 先に `/plugin marketplace update hicard-plugins` を実行してからやり直す |
 
-🔴 **ルールが実際に読み込まれるのは次の起動から。**5 の再起動のあと、`/context` の
-**Memory files** に `hicard.md` が出ることを自分で確かめる。**出ていなければ完了ではない。**
+🔴 **ルールが実際に読み込まれるのは次の起動から。**5 の再起動のあと、`/context` を打ち、
+**Memory files** に次の行が出ることを自分で確かめる。**出ていなければ完了ではない。**
+
+```
+.claude/plugins/marketplaces/hicard-plugins/RULES.md: 1.8k tokens
+```
+
+⚠️ **`hicard.md` という名前では出ない。**`/context` は symlink を解決した先のパスを表示するため、
+`~/.claude/rules/hicard.md` は上のように**実体側の名前**で並ぶ（2026-09-04 実測）。
+`OK  コピー` だった場合だけ `.claude/rules/hicard.md` という名前で出る。**どちらでも合格。**
 
 ## 2｜Notion をつなぐ
 
@@ -188,7 +196,7 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 **管理者は中身を読まずに合否が分かる**（アドレスが妥当か・Drive の行があるか）。
 
 ```
-✅ セットアップ完了  <名前> / <3-3 で読んだ認可アドレス> / Notion:<読めたページ名> / Drive:01_Projects / ルール:<hicard.md を /context で確認> / <YYYY-MM-DD>
+✅ セットアップ完了  <名前> / <3-3 で読んだ認可アドレス> / Notion:<読めたページ名> / Drive:01_Projects / ルール:<RULES.md の行を /context で確認> / <YYYY-MM-DD>
 ```
 
 🔴 **実際に読めたものの名前を入れる。**入れられないなら、それは完了していない。

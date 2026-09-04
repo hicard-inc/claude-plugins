@@ -192,3 +192,33 @@ PY
 ```bash
 git config core.hooksPath hooks
 ```
+
+---
+
+## 7. このリポジトリへの書き込み権限（2026-09-04 追加）
+
+**plugin のインストールは `git clone` で、更新は再 clone。**
+つまり **ここに push できる人は、全メンバーの Claude に任意の Skill と MCP 設定を配れる。**
+リポジトリの write 権限は、そのまま**全員の Claude を動かす権限**になる。
+
+| | 決めごと |
+|---|---|
+| **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み） |
+| **配布先のメンバー** | **Outside collaborator の `pull`（read）だけ渡す。**push は付けない |
+| **Org Member にしない** | Member は Org の**全リポジトリが見える**。クライアントワークが含まれるため |
+| **clone したら1回** | `git config core.hooksPath hooks`。**忘れるとこのリポジトリのガードは全部無効になる**（GitHub Free ではサーバー側の branch protection が使えないので、hook が唯一の担保） |
+
+read 権限を渡すコマンド（zono が実行する）：
+
+```bash
+# 現在の権限を見る
+gh api repos/hicard-inc/claude-plugins/collaborators --jq '.[] | "\(.login)\t\(.role_name)"'
+
+# read だけ渡す（招待が飛ぶ。本人が承諾するまで有効にならない）
+gh api -X PUT repos/hicard-inc/claude-plugins/collaborators/<username> -f permission=pull
+
+# 承諾待ちの招待を見る
+gh api repos/hicard-inc/claude-plugins/invitations --jq '.[] | "\(.invitee.login)\t\(.permissions)"'
+```
+
+> **`permission=pull` を省くと既定は `push` になる。**必ず明示する。

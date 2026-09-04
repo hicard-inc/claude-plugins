@@ -42,9 +42,27 @@ claude plugin update hicard@hicard-plugins
 **2行で一組。**1行目で配布元を取り直し、2行目で入れ直す。
 1行目を飛ばすと、**新しい版が出ていても `already at the latest version` と言われる。**
 
-🔴 **`/plugin ...` とスラッシュで打っても更新されない。**Claude Code 2.1.260 の `/plugin` は
-**引数を取らず、対話ブラウザが開くだけ**（VSCode 拡張ではこの `/plugin` 自体が使えない）。
-**非対話で確実に効くのは上のシェル版**（2026-09-04 実測）。対話ブラウザから操作しても構わない。
+🔴 **`/plugin` を開かない。上のシェル版だけを使う。**
+
+Claude Code 2.1.260 の `/plugin` は**引数を取らず、対話ブラウザが開くだけ**
+（VSCode 拡張ではこの `/plugin` 自体が使えない）。**しかも危険なのは開いたあと。**
+
+**一覧で Enter を押すと、選択中の plugin がその場でインストールされる。**
+2026-09-04 に zono のマシンで**意図しない plugin が2つ入った**（実測）:
+
+| 入ったもの | 常時コスト |
+|---|---|
+| `superpowers@claude-plugins-official`（Skill 14本） | **~690 tok/セッション** |
+| `code-review@claude-plugins-official` | ~22 tok/セッション |
+
+`hicard` plugin 自体の常時コストが **~314 tok** なので、**その2倍が意図せず乗っていた。**
+`/plugin update ...` と打った結果として一覧が開き、そのまま Enter を押した形。
+
+**入ってしまったら外す**（何が入っているかは `claude plugin list`）:
+
+```bash
+claude plugin uninstall <plugin>@<marketplace>
+```
 
 **ルールは1行目だけで最新になる。**`~/.claude/rules/hicard.md` は配布元の
 [RULES.md](RULES.md) への symlink なので、版番号を上げなくても更新が届く。

@@ -21,6 +21,10 @@ Claude Code の plugin marketplace として動く。
 
 `/setup` が Notion と Google ドライブへの接続を最後まで通し、**実際に中身が読めることを確かめる**。
 
+`/setup` は**運用ルール（[RULES.md](RULES.md)）を `~/.claude/rules/hicard.md` に置くところまでやる**。
+🔴 **プラグインは道具しか配れない。**Claude Code の仕様上、plugin から `CLAUDE.md` と
+許可設定（`permissions`）は配布できないので、**ルールはこの経路で入れる**。
+
 > private リポジトリなので、`marketplace add` には GitHub の認証が必要。
 > 通らないときは `gh auth login` を実行する。
 
@@ -33,6 +37,9 @@ Claude Code の plugin marketplace として動く。
 
 **2行で一組。**1行目で配布元を取り直し、2行目で入れ直す。
 1行目を飛ばすと、**新しい版が出ていても `already at the latest version` と言われる。**
+
+**ルールは1行目だけで最新になる。**`~/.claude/rules/hicard.md` は配布元の
+[RULES.md](RULES.md) への symlink なので、版番号を上げなくても更新が届く。
 
 🔴 **さらに、更新だけでは差し替わらない。**動いているセッションは古いまま走り続ける。
 **`/exit` → `claude`（または `/reload-plugins`）までが一組。**
@@ -61,6 +68,7 @@ Claude Code の plugin marketplace として動く。
 ## 構成
 
 ```
+RULES.md                            ← 運用ルール。/setup が ~/.claude/rules/ へ symlink する
 .claude-plugin/marketplace.json     ← marketplace の定義
 plugins/hicard/
   .claude-plugin/plugin.json        ← plugin の定義

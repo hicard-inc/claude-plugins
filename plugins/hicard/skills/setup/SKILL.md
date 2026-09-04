@@ -43,6 +43,24 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/setup/check_setup.sh"
 そのあと **Claude Code を再起動する**（`/exit` → `claude` → `/setup`）。
 **入れただけでは skill と MCP は差し替わらない。**再起動まで見届けて、初めて次へ進む。
 
+### 1-2｜ルールを入れる（`hicard プラグイン` が ✅ になった直後・**省略しない**）
+
+**プラグインは道具を配るが、ルールは配らない。**入れないと「Skill は使えるがルールは1行も無い」状態になる。
+下をそのまま実行する。**本人に何も貼らせない。**
+
+```bash
+python3 "${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py"
+```
+
+| 出力 | 判定 |
+|---|---|
+| `OK  symlink` | **これが正常。**以後 `/plugin marketplace update` だけでルールも最新になる |
+| `OK  コピー` | 動くが**自動では更新されない。**更新のたびに `/setup` を打ち直す必要があると本人に伝える |
+| `NG` | 先に `/plugin marketplace update hicard-plugins` を実行してからやり直す |
+
+🔴 **ルールが実際に読み込まれるのは次の起動から。**5 の再起動のあと、`/context` の
+**Memory files** に `hicard.md` が出ることを自分で確かめる。**出ていなければ完了ではない。**
+
 ## 2｜Notion をつなぐ
 
 ツールは遅延ロードのことがある。**呼ぶ前に読み込む**：
@@ -170,7 +188,7 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 **管理者は中身を読まずに合否が分かる**（アドレスが妥当か・Drive の行があるか）。
 
 ```
-✅ セットアップ完了  <名前> / <3-3 で読んだ認可アドレス> / Notion:<読めたページ名> / Drive:01_Projects / <YYYY-MM-DD>
+✅ セットアップ完了  <名前> / <3-3 で読んだ認可アドレス> / Notion:<読めたページ名> / Drive:01_Projects / ルール:<hicard.md を /context で確認> / <YYYY-MM-DD>
 ```
 
 🔴 **実際に読めたものの名前を入れる。**入れられないなら、それは完了していない。
@@ -207,6 +225,7 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` | 症状別の対処表・Google アカウントの繋ぎ直し |
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/access_model.md` | 誰として入るか／なぜ一般メンバーに鍵が要らないか |
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/github_basics.md` | Git と GitHub を触ったことがない人への説明 |
+| `${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py` | 1-2 で走らせるもの。ルールを `~/.claude/rules/hicard.md` に置く |
 
 ## 守ること
 

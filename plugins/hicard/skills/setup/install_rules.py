@@ -54,7 +54,9 @@ def main() -> int:
         print(f"OK  コピー  {dst} （symlink が張れなかった: {e}）")
         print("    このやり方だと自動では更新されない。更新のたびに /setup を打ち直す。")
 
-    print("    次回の起動から読み込まれる。/context の Memory files に hicard.md が出るかを確かめる。")
+    print("    次回の起動から読み込まれる。/context の Memory files を見て確かめる。")
+    print("    symlink なら 'hicard-plugins/RULES.md'、コピーなら 'rules/hicard.md' の行が出れば合格。")
+    print("    （/context は symlink を解決した先を表示するので 'hicard.md' では出ない）")
     return 0
 
 

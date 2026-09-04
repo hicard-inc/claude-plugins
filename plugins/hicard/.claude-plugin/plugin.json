@@ -1,7 +1,7 @@
 {
   "name": "hicard",
   "displayName": "hicard",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "hicard メンバー共通の Skill と MCP 設定。個人・報酬・契約に触れる情報は含まない",
   "author": { "name": "hicard" },
   "repository": "https://github.com/hicard-inc/claude-plugins",

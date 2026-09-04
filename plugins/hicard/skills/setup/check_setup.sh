@@ -65,7 +65,7 @@ if [ -f "$PLUGIN_ROOT/.claude-plugin/plugin.json" ]; then
         "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null || echo "?")
   check "hicard プラグイン" "ok" "v$VER"
 else
-  check "hicard プラグイン" "ng" "/plugin marketplace add hicard-inc/claude-plugins → /plugin install hicard@hicard-plugins"
+  check "hicard プラグイン" "ng" "ターミナルで claude plugin marketplace add hicard-inc/claude-plugins → claude plugin install hicard@hicard-plugins"
 fi
 
 # ── git の名乗り ─────────────────────────────────────────────

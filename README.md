@@ -8,12 +8,14 @@ Claude Code の plugin marketplace として動く。
 
 ## 導入（メンバー各自が1回だけ）
 
-```
-/plugin marketplace add hicard-inc/claude-plugins
-/plugin install hicard@hicard-plugins
+**ターミナルで**（Claude Code の中ではなく）：
+
+```bash
+claude plugin marketplace add hicard-inc/claude-plugins
+claude plugin install hicard@hicard-plugins
 ```
 
-そのあと **Claude Code を再起動**（`/exit` → `claude`）してから：
+そのあと `claude` で立ち上げて：
 
 ```
 /setup
@@ -30,13 +32,19 @@ Claude Code の plugin marketplace として動く。
 
 ## 更新（月1回くらい）
 
-```
-/plugin marketplace update hicard-plugins
-/plugin update hicard@hicard-plugins
+**ターミナルで**（Claude Code を閉じてから）：
+
+```bash
+claude plugin marketplace update hicard-plugins
+claude plugin update hicard@hicard-plugins
 ```
 
 **2行で一組。**1行目で配布元を取り直し、2行目で入れ直す。
 1行目を飛ばすと、**新しい版が出ていても `already at the latest version` と言われる。**
+
+🔴 **`/plugin ...` とスラッシュで打っても更新されない。**Claude Code 2.1.260 の `/plugin` は
+**引数を取らず、対話ブラウザが開くだけ**（VSCode 拡張ではこの `/plugin` 自体が使えない）。
+**非対話で確実に効くのは上のシェル版**（2026-09-04 実測）。対話ブラウザから操作しても構わない。
 
 **ルールは1行目だけで最新になる。**`~/.claude/rules/hicard.md` は配布元の
 [RULES.md](RULES.md) への symlink なので、版番号を上げなくても更新が届く。

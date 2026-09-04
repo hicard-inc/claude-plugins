@@ -35,12 +35,14 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/setup/check_setup.sh"
 
 ### `hicard プラグイン` が ❌ のとき
 
-```
-/plugin marketplace add hicard-inc/claude-plugins
-/plugin install hicard@hicard-plugins
+**ターミナルで実行させる**（`/plugin` はスラッシュでは引数を取らないので効かない）：
+
+```bash
+claude plugin marketplace add hicard-inc/claude-plugins
+claude plugin install hicard@hicard-plugins
 ```
 
-そのあと **Claude Code を再起動する**（`/exit` → `claude` → `/setup`）。
+そのあと **Claude Code を立ち上げ直す**（`claude` → `/setup`）。
 **入れただけでは skill と MCP は差し替わらない。**再起動まで見届けて、初めて次へ進む。
 
 ### 1-2｜ルールを入れる（`hicard プラグイン` が ✅ になった直後・**省略しない**）
@@ -54,9 +56,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py"
 
 | 出力 | 判定 |
 |---|---|
-| `OK  symlink` | **これが正常。**以後 `/plugin marketplace update` だけでルールも最新になる |
+| `OK  symlink` | **これが正常。**以後 `claude plugin marketplace update` だけでルールも最新になる |
 | `OK  コピー` | 動くが**自動では更新されない。**更新のたびに `/setup` を打ち直す必要があると本人に伝える |
-| `NG` | 先に `/plugin marketplace update hicard-plugins` を実行してからやり直す |
+| `NG` | 先にターミナルで `claude plugin marketplace update hicard-plugins` を実行してからやり直す |
 
 🔴 **ルールが実際に読み込まれるのは次の起動から。**5 の再起動のあと、`/context` を打ち、
 **Memory files** に次の行が出ることを自分で確かめる。**出ていなければ完了ではない。**
@@ -81,7 +83,7 @@ ToolSearch  query: "+notion search recent pages"
 |---|---|---|
 | 一覧が返る | 繋がっている | 3 へ |
 | 読み込めたが認証エラー | **未認可** | 下の案内を出して待つ |
-| `ToolSearch` でも出てこない | **プラグインが未導入か未再起動** | 1 の `/plugin install` に戻る |
+| `ToolSearch` でも出てこない | **プラグインが未導入か未再起動** | 1 の `claude plugin install` に戻る |
 
 **この2つを取り違えない。**認証エラーは本人が直せる。ツールが無いのは本人には直せない。
 
@@ -215,10 +217,11 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 - 始めるとき  ターミナルで claude
 - あとは普通に話しかけてください。保存も共有も私がやります
 
-月に1回くらい、Claude Code の中で次の2行を実行してください（新しい手順が入ります）。
-  /plugin marketplace update hicard-plugins
-  /plugin update hicard@hicard-plugins
-そのあと /exit して立ち上げ直すところまでが一組です。
+月に1回くらい、ターミナルで次の2行を実行してください（新しい手順が入ります）。
+  claude plugin marketplace update hicard-plugins
+  claude plugin update hicard@hicard-plugins
+そのあと claude で立ち上げ直すところまでが一組です。
+（Claude Code の中で /plugin と打つと一覧が開くだけで、更新はされません）
 ```
 
 ## 相手が「エラーが出た」と言ってきたら

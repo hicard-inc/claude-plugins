@@ -3,7 +3,7 @@
 
 配布元リポジトリ直下の RULES.md へ symlink を張る。
 symlink 先は marketplace の clone（版番号を含まない安定したパス）なので、
-`/plugin marketplace update hicard-plugins` だけでルールも最新になる。
+`claude plugin marketplace update hicard-plugins` だけでルールも最新になる。
 
 plugin の cache（.../cache/<marketplace>/<plugin>/<版>/）は版ごとに別のフォルダになるため、
 そちらへ張ると更新のたびにリンクが切れる。だから marketplace 側を指す。
@@ -39,7 +39,7 @@ def main() -> int:
             dst.unlink()
             print("   （リンク切れになっていた古いルールを外した）")
         print("NG  RULES.md が見つからない。")
-        print("    先に  /plugin marketplace update hicard-plugins  を実行してからやり直す。")
+        print("    先にターミナルで  claude plugin marketplace update hicard-plugins  を実行してからやり直す。")
         return 1
 
     dst.parent.mkdir(parents=True, exist_ok=True)

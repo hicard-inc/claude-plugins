@@ -274,17 +274,29 @@ git config core.hooksPath hooks
 | **読む（clone・インストール）** | **public。**誰でも読める。**新メンバーに招待は要らない**（要るのは GitHub アカウントと SSH 鍵だけ。`marketplace add` は SSH で clone する） |
 | **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み）。**collaborator も Org Member も足さない** |
 | **`main` の保護（GitHub 側）** | **PR 必須・直接 push 禁止・force push 禁止・削除禁止・管理者にも適用**（`enforce_admins`）。2026-09-05 に設定し、API の GET で確認済み。**Owner でも `main` へは PR を経ないと入らない** |
-| **clone したら1回** | `git config core.hooksPath hooks`。push 前に手元で**版の食い違いと鍵の混入**を見る。**この2つは GitHub 側の保護では止まらない**ので、hook は保護の代わりではなく二重目 |
+| **clone したら1回** | `git config core.hooksPath hooks`。push 前に手元で**版の食い違いと鍵の混入**を見る。**public では push した瞬間に世界に見える**ので、push 前に止められるのはこの hook と下の Push protection だけ。PR テンプレートに有効化のチェック欄がある |
+| **Push protection（GitHub 側・2026-09-05 ON）** | Secret scanning ＋ Push protection。**既知の約 200 社のトークン形式は push 時にサーバー側で拒否**される（Owner・admin にも効く。バイパスは可能だが Security タブに記録が残る） |
+| **必須チェック `checks`（Actions・2026-09-05 ON）** | PR ごとに `hooks/check_versions.py`・`hooks/check_secrets.py --all`・`hooks/check_blocklist.py` が走り、**落ちると `main` にマージできない**（branch protection の required status check）。ローカル hook と同じスクリプトなので判定はずれない |
+| **禁止語一覧 `BLOCKLIST`** | クライアント名・人名など「パターンで書ける不要な情報」の正規表現（`\|` 区切り・大文字小文字を区別しない）。🔴 **public なので一覧はリポジトリに置かず、Actions の secret に入れる**（`gh secret set BLOCKLIST -R hicard-inc/claude-plugins`・Owner だけが更新できる）。**空だとチェックは失敗する**（守っていない状態で通さない）。ログには当たった場所しか出ない。**一覧に無い語は通る**ので、文脈で決まる情報（報酬額・評価）は人のレビューで見る |
 | **public に切り替えた理由** | private では Org Free の制約で branch protection が使えず（403）、新メンバーごとに outside collaborator の招待が要り、**招待前は誰も clone できなかった**。中身は最初から「全員のマシンに落ちる前提」で書いているので、公開範囲が広がっても入れてよいものの基準（0章）は変わらない |
 
-**なぜ private に戻さないか**: 戻すと保護が外れて招待が復活する。**戻す判断は Owner 4名で**。
+**なぜ private に戻さないか**: 戻すと保護と Push protection が外れて招待が復活する。**戻す判断は Owner 4名で**。
+
+🔴 **鍵が public に出たら、履歴を消しても fork とキャッシュに残る。**唯一の対処は**鍵そのものの無効化（ローテーション）**。
+だから止める層は push の**前**に置く（hook・Push protection）。Actions は「`main` に入るのを止める」層で、push 後。
 
 保護の現状を見るコマンド（Owner が実行する）：
 
 ```bash
 gh api repos/hicard-inc/claude-plugins --jq '"private=\(.private) delete_branch_on_merge=\(.delete_branch_on_merge)"'
 gh api repos/hicard-inc/claude-plugins/branches/main/protection \
-  --jq '"pr_required=\(.required_pull_request_reviews != null) enforce_admins=\(.enforce_admins.enabled) force_push=\(.allow_force_pushes.enabled) deletions=\(.allow_deletions.enabled)"'
+  --jq '"pr_required=\(.required_pull_request_reviews != null) enforce_admins=\(.enforce_admins.enabled) force_push=\(.allow_force_pushes.enabled) deletions=\(.allow_deletions.enabled) checks=\(.required_status_checks.contexts)"'
+gh api repos/hicard-inc/claude-plugins --jq '.security_and_analysis | "secret_scanning=\(.secret_scanning.status) push_protection=\(.secret_scanning_push_protection.status)"'
+gh secret list -R hicard-inc/claude-plugins   # BLOCKLIST が並ぶこと（中身は見えない）
 ```
 
-期待値: `private=false delete_branch_on_merge=true` / `pr_required=true enforce_admins=true force_push=false deletions=false`。
+期待値: `private=false delete_branch_on_merge=true` / `pr_required=true enforce_admins=true force_push=false deletions=false checks=["checks"]` /
+`secret_scanning=enabled push_protection=enabled` / `BLOCKLIST`。
+
+**禁止語で PR が落ちたとき**: ログの `path:line` を手元で開いて直す。語そのものを確認したいときは Owner に聞く（一覧は secret の中）。
+テスト用の偽データなど正当な例外は、`check_secrets.py` は `ci:allow-secret` の注記で通せるが、**禁止語には例外の仕組みを作っていない**（例外を作ると一覧の意味が無くなる）。

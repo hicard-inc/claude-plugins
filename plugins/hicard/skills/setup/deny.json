@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(sudo:*)",
+      "Bash(git push --force:*)",
+      "Bash(git push -f:*)",
+      "Bash(git push * --force*)",
+      "Bash(git push * -f*)",
+      "Bash(git push * +*)",
+      "Read(**/.env*)",
+      "Read(**/*.env)",
+      "Read(~/**/.env*)",
+      "Read(~/**/*.env)",
+      "Read(**/.ssh/**)",
+      "Read(~/**/.ssh/**)",
+      "Read(**/secrets/**)",
+      "Read(~/**/secrets/**)",
+      "Read(**/*credential*)",
+      "Read(~/**/*credential*)"
+    ]
+  }
+}

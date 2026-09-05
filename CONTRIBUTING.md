@@ -204,7 +204,10 @@ ToolSearch  query: "+notion query data sources users"
 2. **シェル・JS は構文チェックを通す**（`bash -n` / `node --check`）
 3. **`${CLAUDE_PLUGIN_ROOT}` を除いた参照が実在するか**を確認する
 4. **禁止語をスキャンする**（人名・報酬・契約・案件名）
-5. **`version` を上げる**（`plugin.json` と `marketplace.json` の両方）
+5. **`version` を上げる**（`plugin.json` と `marketplace.json` の両方）。
+   🔴 **#3〜#7 は5回続けて `plugin.json` しか上げておらず、`marketplace.json` は 0.1.2 で止まっていた。**
+   覚えておく方式は既に失敗しているので、**`python3 hooks/check_versions.py` で機械が見る**
+   （`git config core.hooksPath hooks` を入れてあれば push のときに自動で走って止まる）
 6. **自分の環境に入れ直して、実際に動かす**
 7. 🔴 **関門4を通す**（3章）。**書いたコマンド・接続・手順を自分で1回実行し、出力を PR 本文に貼る**
 
@@ -215,6 +218,7 @@ claude plugin marketplace update hicard-plugins # 取り直す
 claude plugin update hicard@hicard-plugins      # 入れ直す（restart が要る）
 claude plugin details hicard                    # 構成とトークンを見る
 claude mcp list                                 # 🔴 接続を確かめる（details では分からない）
+python3 hooks/check_versions.py                 # 版が2箇所で食い違っていないか
 ```
 
 ```bash

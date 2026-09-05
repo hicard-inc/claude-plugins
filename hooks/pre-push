@@ -1,5 +1,5 @@
 #!/bin/bash
-# push する前に (1) main への直接 push を止め (2) 中身に鍵が無いか見る。
+# push する前に (0) 版の食い違いを見て (1) main への直接 push を止め (2) 中身に鍵が無いか見る。
 # 一時的に飛ばす: git push --no-verify
 #
 # 有効化: git config core.hooksPath hooks
@@ -7,10 +7,17 @@
 
 REPO_DIR="$(git rev-parse --show-toplevel)"
 CHECKER="$REPO_DIR/hooks/check_secrets.py"
+VERSION_CHECKER="$REPO_DIR/hooks/check_versions.py"
 # 1ファイルの上限KB。0=無効。素材（動画・画像）を置くリポジトリは 0 のままにする。
 # ドキュメント中心のリポジトリは 1024 などにするとよい。
 MAX_KB=0
 FAILED=0
+
+# ── (0) 版が2箇所で食い違っていないか見る ────────────────────
+# plugin を配るリポジトリだけが対象（marketplace.json が無ければ何もしない）
+if [ -f "$VERSION_CHECKER" ]; then
+  if ! python3 "$VERSION_CHECKER" --quiet; then FAILED=1; fi
+fi
 
 # 既定ブランチ名を remote から引く（main / master どちらでも動く）
 DEFAULT_BRANCH="$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null | sed 's|^origin/||')"

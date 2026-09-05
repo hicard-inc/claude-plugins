@@ -1,0 +1,22 @@
+# PR ごとに走り、branch protection の必須チェック「checks」になる。落ちると main にマージできない。
+# 3つとも hooks/ の同じスクリプト（ローカル pre-push と同じ判定をサーバー側でもう一度やる）。
+name: checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 版の食い違い（marketplace.json と plugin.json）
+        run: python3 hooks/check_versions.py
+      - name: 鍵・置いてはいけないファイル（追跡中の全ファイル）
+        run: python3 hooks/check_secrets.py --all
+      - name: 禁止語（一覧は Actions secret の BLOCKLIST。ログには場所しか出さない）
+        env:
+          BLOCKLIST: ${{ secrets.BLOCKLIST }}
+        run: python3 hooks/check_blocklist.py

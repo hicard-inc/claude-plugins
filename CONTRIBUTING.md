@@ -79,8 +79,27 @@ private だからといって以下は入れない。**一度コミットする�
 claude plugin details hicard    # 常時コストと、スキルごとの呼び出し時コストが出る
 ```
 
-現状の実測（0.1.1）。**常時 ~314 トークン**、呼び出し時は setup ~4.4k / slides ~4.3k /
-research ~3k / tasks ~2.2k ＝合計 ~13.9k で、上限 25,000 の内側。
+現状の実測（**0.1.6**・2026-09-05）。**常時 ~314 トークン**、呼び出し時は
+**setup ~5.3k** / slides ~4.3k / research ~2.9k / tasks ~2.2k ＝合計 ~14.7k。
+全体の上限 25,000 は超えていない。
+
+🔴 **setup が 1 Skill の上限 5,000 を超えていた**（表の2行目）。
+0.1.1 の時点では 4.4k で、そこから追記を重ねるうちに越えた。**測るまで誰も気づいていない。**
+[#6](https://github.com/hicard-inc/claude-plugins/pull/6) で参照資料（`google_drive.md`）を
+切り出して戻した。**この数字は 0.1.6 のものなので、#6 のマージ後に測り直すこと。**
+
+**How to apply: Skill に1行足したら測る。**行数や体感で判断しない。
+`SKILL.md` を膨らませずに内容を足す方法は1つで、**参照資料に出して本文からポインタで指す**（1章）。
+
+🔴 **`claude plugin details` は接続を確かめない。**0.1.6 では
+
+```
+MCP servers (3)  notion, gdrive, gsheets  (tool schemas resolved at runtime; not counted)
+```
+
+と出ていたが、そのうち**繋がっていたのは `notion` の1本だけだった。**
+この行は **`.mcp.json` に3本書いてある**という意味でしかない。
+**繋がっているかは `claude mcp list` でしか分からない**（`✔ Connected` が出た本数だけが稼働している）。
 
 🔴 **`plugin.json` の `version` を上げないと、この数字も配布物も更新されない。**
 `claude plugin update` は**版番号を見て判断する**ので、中身を直しただけでは
@@ -92,15 +111,43 @@ research ~3k / tasks ~2.2k ＝合計 ~13.9k で、上限 25,000 の内側。
 
 ---
 
-## 3. 配布可否の3関門（全部通らないものは配らない）
+## 3. 配布可否の4関門（全部通らないものは配らない）
 
 | # | 関門 | 落ちる例 |
 |---|---|---|
 | **1** | **2人以上が使うか** | 1人の文体を写すもの／管理者しか実行しないもの／経理担当だけのもの |
 | **2** | **固有名詞・状態が本文に無いか** | 「現在のページ一覧（10人）」「◯◯の判断待ち」「クライアント企業26社の略号表」 |
 | **3** | **自己完結しているか** | 配れないファイルを「方法論の正本」として参照しているもの／別リポジトリの `docs/` を読むもの |
+| **4** | 🔴 **書いた本人が1回実行して、出力を見たか** | `--help` に載っているから動くはずのコマンド／`.mcp.json` に書いただけの接続／思い出しで書いた画面の手順 |
 
 **関門1を飛ばすのが最も多い失敗。**「移しやすいか」ではなく「**2人以上が使うか**」で決める。
+
+### 関門4（2026-09-05 追加・落ちた実績が3件あるので足した）
+
+**「配布物に載せるコマンド・接続・画面の手順は、書いた本人が1回実行して、その出力を貼る。」**
+
+| 配ったもの | 何が起きたか | 直した PR |
+|---|---|---|
+| 更新手順「`/plugin marketplace update` を実行」 | **`/plugin` は引数を取らない。**一覧が開くだけで、**Enter を押すと選択中の plugin がその場で入る**（zono のマシンに `superpowers` が意図せず入った） | [#4](https://github.com/hicard-inc/claude-plugins/pull/4) [#5](https://github.com/hicard-inc/claude-plugins/pull/5) |
+| MCP 3本（`notion` / `gdrive` / `gsheets`） | **`gdrive` / `gsheets` は2台とも一度も繋がっていなかった**（`Incompatible auth server: does not support dynamic client registration`）。**`.mcp.json` に書いたことを稼働の証明に使っていた** | [#6](https://github.com/hicard-inc/claude-plugins/pull/6) |
+| ルールの確認手順「`/context` で見る」 | **`/context` はスラッシュコマンドで Claude 自身は実行できない。**さらに表示は symlink 名ではなく解決先のパス（正常な人が全員 ✘ と判定するところだった） | [#3](https://github.com/hicard-inc/claude-plugins/pull/3) [#6](https://github.com/hicard-inc/claude-plugins/pull/6) |
+
+**3件に共通するのは「定義が存在すること」を「動くこと」の証明に使った点。**
+`--help` に載っている・`.mcp.json` に書いてある・仕様上そう表示されるはず、はどれも証明ではない。
+
+**関門4の通し方**（PR 本文に貼る）:
+
+| 配布物の種類 | 実行するもの | 貼るもの |
+|---|---|---|
+| コマンド | そのコマンドをそのまま | 出力の先頭数行と終了コード |
+| MCP サーバー | `claude mcp list` | `✔ Connected` の行 |
+| Skill の手順 | 手順を上から1回 | 判定に使う行が実際に出たこと |
+| 画面（claude.ai 等） | 実際に1回通す | 画面の順番。**通せないなら手順を書かず「管理者へ回す」で止める** |
+
+🔴 **通せなかったときに、思い出しで手順を書かない。**
+[#6](https://github.com/hicard-inc/claude-plugins/pull/6) で入る `skills/setup/google_drive.md` が実例で、
+claude.ai 側の画面順が未実測なので**手順を書かず、管理者へ回す文面だけを置いてある。**
+**空白のまま置くほうが、間違った手順より安い。**
 
 ### 実際に落ちたもの（同じ判断を繰り返さないための記録）
 
@@ -159,6 +206,7 @@ ToolSearch  query: "+notion query data sources users"
 4. **禁止語をスキャンする**（人名・報酬・契約・案件名）
 5. **`version` を上げる**（`plugin.json` と `marketplace.json` の両方）
 6. **自分の環境に入れ直して、実際に動かす**
+7. 🔴 **関門4を通す**（3章）。**書いたコマンド・接続・手順を自分で1回実行し、出力を PR 本文に貼る**
 
 ```bash
 claude plugin validate .                        # marketplace の検証
@@ -166,6 +214,7 @@ claude plugin validate plugins/hicard           # plugin 単体の検証
 claude plugin marketplace update hicard-plugins # 取り直す
 claude plugin update hicard@hicard-plugins      # 入れ直す（restart が要る）
 claude plugin details hicard                    # 構成とトークンを見る
+claude mcp list                                 # 🔴 接続を確かめる（details では分からない）
 ```
 
 ```bash

@@ -61,7 +61,7 @@
 | `✔ Connected` | 接続だけは成立した | — | 🔴 **これを合格の理由にしない。**中身が読めたかで判定する（`SKILL.md` の 4） |
 | `! Needs authentication` | **まだ一度も認可していないだけ。初回は全員これ** | ✅ 直せる | `/mcp` を開いて認可する |
 | `✘ Failed to connect — Incompatible auth server: does not support dynamic client registration` | 相手が**事前登録された OAuth クライアント**を要求している | ❌ **直せない** | 下の「なぜドライブは配れないのか」 |
-| `✘ Failed to connect — CONNECTION_CLOSED` | **`stdio` のサーバーが起動に失敗した**（ログがどこにも残らない） | ✅ 直せることが多い | 下の「`CONNECTION_CLOSED` のとき」 |
+| `✘ Failed to connect — CONNECTION_CLOSED` | **`stdio` のサーバーが起動に失敗した**（ログがどこにも残らない。**起動直後だけの一過性もある**） | ✅ 直せることが多い | **まず `claude mcp list` を打ち直す。**2回続けて落ちたら下の「`CONNECTION_CLOSED` のとき」 |
 
 🔴 **`! Needs authentication` を「繋がらない」と報告しない。**認可すれば通る状態で、`✘` とは別物。
 
@@ -100,6 +100,19 @@ plugin 経由は `mcp__plugin_<plugin>_<server>__<tool>`、プロジェクト経
 **名前が変わる。**`allowed-tools` などに書いてあると**そのツールだけ黙って使えなくなる。**
 
 ### `CONNECTION_CLOSED` のとき（`stdio` の起動失敗を目で見る）
+
+🔴 **最初にやることは、診断ではなく `claude mcp list` を打ち直すこと。**
+**起動直後だけ落ちて、その後は何もせず繋がる場合がある**（2026-09-05 実測）。
+セッション開始時に `google-sheets (CONNECTION_CLOSED)` と出た同じマシンで、
+**1分後に打ち直したら `✔ Connected` だった。設定も鍵も何も変えていない。**
+
+`uvx` / `npx` のように**起動のたびにパッケージを取りに行く**書き方だと、
+初回の解決が Claude 側の待ち時間に間に合わないことがある（**推定**。待ち時間の値は未確認）。
+
+→ **打ち直して繋がったら、そこで終わり。**下の手順に進むのは**2回続けて落ちたとき**だけ。
+🔴 **1回の失敗で `.mcp.json` を書き換えない。**直っていないものを直したと記録することになる。
+
+**2回続けて落ちたとき:**
 
 **`stdio` のサーバーは、プロセスが起動に失敗してもログがどこにも残らない。**Claude 側には接続断としか見えない。
 **`.mcp.json` に書いてある `command` と `args` をそのまま手で実行して stderr を読む**のが、原因を見る唯一の方法。

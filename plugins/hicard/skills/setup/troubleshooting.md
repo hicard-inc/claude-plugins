@@ -65,9 +65,8 @@
 
 🔴 **`! Needs authentication` を「繋がらない」と報告しない。**認可すれば通る状態で、`✘` とは別物。
 
-⚠️ **認可したあと `plugin:hicard:notion` がどう表示されるかは、2026-09-05 時点で未実測。**
-配布側でも `✔ Connected` になったところを一度も見ていない（見えていた `✔` は後述のとおり別物だった）。
-**最初に認可した人は、そのときの表示をこの表に追記すること。**
+**認可すると `✔ Connected` に変わる**（2026-09-05 実測。`plugin:hicard:notion` と
+`plugin:figma:figma` の2本で確認）。**`/mcp` で認可するだけで、再起動も設定の変更も要らない。**
 
 ### 🔴 `claude mcp list` は、打った場所で結果が変わる
 
@@ -87,6 +86,18 @@ notion: https://mcp.notion.com/mcp (HTTP) - ✔ Connected      ← リポジト�
 
 → 🔴 **plugin の状態を見るときは、`cd ~` してから `claude mcp list` を打つ。**
 リポジトリの中で見た `✔ Connected` を、plugin が繋がった証拠にしない。
+
+**中身が同じなら、リポジトリ側の重複定義を消して plugin 側に一本化する。**
+上の例は `.mcp.json` の `notion` が plugin と**同じ URL・同じ `type`** だったので、リポジトリ側を消した。
+消したあとは**どのディレクトリで打っても同じ結果**になる（2026-09-05 実測）：
+
+```
+plugin:hicard:notion: https://mcp.notion.com/mcp (HTTP) - ✔ Connected
+```
+
+⚠️ **消す前に、そのサーバーのツール名を名指ししている設定が無いか探す。**
+plugin 経由は `mcp__plugin_<plugin>_<server>__<tool>`、プロジェクト経由は `mcp__<server>__<tool>` で、
+**名前が変わる。**`allowed-tools` などに書いてあると**そのツールだけ黙って使えなくなる。**
 
 ### `CONNECTION_CLOSED` のとき（`stdio` の起動失敗を目で見る）
 

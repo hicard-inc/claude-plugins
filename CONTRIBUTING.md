@@ -237,7 +237,7 @@ ToolSearch  query: "+notion query data sources users"
 ```bash
 claude plugin validate .                        # marketplace の検証
 claude plugin validate plugins/hicard           # plugin 単体の検証
-claude plugin marketplace update hicard-plugins # 取り直す
+claude plugin marketplace update hicard-plugins # 取り直す（マージ後は最初の指示から 10 分以内に自動でも届く・2026-09-05 実測）
 claude plugin update hicard@hicard-plugins      # 入れ直す（restart が要る）
 claude plugin details hicard                    # 構成とトークンを見る
 claude mcp list                                 # 🔴 接続を確かめる（details では分からない）

@@ -52,6 +52,77 @@
 | **入ってしまったら** | `claude plugin list` で見て `claude plugin uninstall <plugin>@<marketplace>` |
 | **なぜ気にするか** | 常時コストが増えるだけでなく、**入れた plugin の Skill が hicard のルールと競合しうる**（同じ場面で別の手順を主張する） |
 
+## 🔴 接続の状態は4種類ある（`claude mcp list` の読み方・2026-09-05 実測）
+
+**`✘` を全部同じ「壊れている」で扱わない。**本人が直せるものと、どうやっても直せないものが混ざっている。
+
+| 表示 | 何が起きているか | 本人が直せるか | やること |
+|---|---|---|---|
+| `✔ Connected` | 接続だけは成立した | — | 🔴 **これを合格の理由にしない。**中身が読めたかで判定する（`SKILL.md` の 4） |
+| `! Needs authentication` | **まだ一度も認可していないだけ。初回は全員これ** | ✅ 直せる | `/mcp` を開いて認可する |
+| `✘ Failed to connect — Incompatible auth server: does not support dynamic client registration` | 相手が**事前登録された OAuth クライアント**を要求している | ❌ **直せない** | 下の「なぜドライブは配れないのか」 |
+| `✘ Failed to connect — CONNECTION_CLOSED` | **`stdio` のサーバーが起動に失敗した**（ログがどこにも残らない） | ✅ 直せることが多い | 下の「`CONNECTION_CLOSED` のとき」 |
+
+🔴 **`! Needs authentication` を「繋がらない」と報告しない。**認可すれば通る状態で、`✘` とは別物。
+
+⚠️ **認可したあと `plugin:hicard:notion` がどう表示されるかは、2026-09-05 時点で未実測。**
+配布側でも `✔ Connected` になったところを一度も見ていない（見えていた `✔` は後述のとおり別物だった）。
+**最初に認可した人は、そのときの表示をこの表に追記すること。**
+
+### 🔴 `claude mcp list` は、打った場所で結果が変わる
+
+**同じマシンの同じ時刻に、別の結果が出る**（2026-09-05 実測）。
+
+```
+# ホーム（cd ~）で実行
+plugin:hicard:notion: https://mcp.notion.com/mcp (HTTP) - ! Needs authentication
+
+# .mcp.json を持つリポジトリの中で実行
+notion: https://mcp.notion.com/mcp (HTTP) - ✔ Connected      ← リポジトリ側の設定。plugin のものではない
+```
+
+**リポジトリの `.mcp.json` に同じ名前のサーバーがあると、plugin 側がその名前ごと隠れる。**
+別名の plugin サーバー（`plugin:figma:figma`）は両方に出るので、
+**「プロジェクトの中では plugin の MCP が無効になる」わけではない。名前がぶつかっているだけ。**
+
+→ 🔴 **plugin の状態を見るときは、`cd ~` してから `claude mcp list` を打つ。**
+リポジトリの中で見た `✔ Connected` を、plugin が繋がった証拠にしない。
+
+### `CONNECTION_CLOSED` のとき（`stdio` の起動失敗を目で見る）
+
+**`stdio` のサーバーは、プロセスが起動に失敗してもログがどこにも残らない。**Claude 側には接続断としか見えない。
+**`.mcp.json` に書いてある `command` と `args` をそのまま手で実行して stderr を読む**のが、原因を見る唯一の方法。
+
+```bash
+# .mcp.json のあるディレクトリで。<サーバー名> は claude mcp list に出ている名前
+python3 - '<サーバー名>' <<'EOF' > /tmp/run_mcp.sh
+import json, shlex, sys
+d = json.load(open(".mcp.json"))["mcpServers"][sys.argv[1]]
+env = " ".join("%s=%s" % (k, shlex.quote(v)) for k, v in d.get("env", {}).items())
+print("#!/bin/sh")
+print("exec env %s %s %s" % (env, shlex.quote(d["command"]),
+                             " ".join(shlex.quote(a) for a in d["args"])))
+EOF
+sh /tmp/run_mcp.sh < /dev/null      # ← ここに出る stderr が原因
+```
+
+🔴 **打ち直さず、ファイルから組み立てる。**手で打ち直すと、`.mcp.json` の中身ではなく
+**自分が正しいと思っている中身**を試すことになる。
+
+**実際に出た例**（2026-09-05・hicard の別リポジトリの Google Sheets サーバー）:
+
+```
+ModuleNotFoundError: No module named 'mcp.server.fastmcp'
+```
+
+**原因は上流の破壊的変更だった。**パッケージを `@latest` で指していたので**起動のたびに依存が解決し直され**、
+作者が想定していない新しい版を引いていた。**版を固定して直った。**
+
+🔴 **`CONNECTION_CLOSED` を見て「権限が無い」「相手のサーバーの障害」と決めつけない。**
+このときも会社側の制限を疑ったが、**同じ鍵で API 自体は通っていた。**起動していなかっただけ。
+
+→ **`.mcp.json` に外部パッケージを書くときは版を固定する**（`@latest` を使わない）。
+
 ## Notion
 
 | 症状 | 原因 | 対処 |
@@ -59,6 +130,7 @@
 | Notion は繋がったのに hicard が見えない | 許可のとき**個人のワークスペース**を選んだ | Claude に「Notion を繋ぎ直したい」と言う。認可をやり直し、**「hicard」を選ぶ** |
 | 一部のページだけ見えない | **まだ共有されていない**（正常） | 管理者に共有を依頼。**設定では直らない** |
 | Notion のツールがそもそも出てこない | プラグイン未導入・未再起動 | 上の「プラグイン」の表へ |
+| `claude mcp list` に `plugin:hicard:notion: ! Needs authentication` と出る | **まだ認可していないだけ**（初回は全員これ） | `/mcp` を開いて認可する。**`✘` ではないので「繋がらない」と報告しない**。上の「接続の状態は4種類ある」 |
 
 ## Google ドライブ
 

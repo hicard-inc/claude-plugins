@@ -45,10 +45,8 @@ claude plugin install hicard@hicard-plugins
 そのあと **Claude Code を立ち上げ直す**（`claude` → `/setup`）。
 **入れただけでは skill と MCP は差し替わらない。**再起動まで見届けて、初めて次へ進む。
 
-🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける。**
-原因は **SSH 鍵の未登録**（clone は SSH で走る）・**2FA が SMS のまま**（Org は「セキュアな2FA必須」で 403）・
-**collaborator 未追加** の3つのどれか。対処は `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md`。
-**インストール先は user でも local スコープでも構わない**（2026-09-05 実測で両方通る）。
+🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（SSH 鍵・2FA・collaborator の
+3つのどれか）。対処は `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` の「プラグイン」。
 
 ### 1-2｜ルールを入れる（`hicard プラグイン` が ✅ になった直後・**省略しない**）
 
@@ -99,16 +97,17 @@ ToolSearch  query: "+notion search recent pages"
 
 **この2つを取り違えない。**認証エラーは本人が直せる。ツールが無いのは本人には直せない。
 
+🔴 **`claude mcp list` は `cd ~` してから打つ**（リポジトリの `.mcp.json` に同じ名前があると plugin 側が隠れる）。
+**初回は全員 `! Needs authentication`。これは `✘` ではない。**読み分けは troubleshooting.md。
+
 > **表示された URL を開いて、Notion へのアクセスを許可してください。**
 > **ワークスペースを選ぶ画面が出たら、必ず「hicard」を選んでください。**
 > 個人のワークスペースを選ぶと、繋がったのに hicard のページが1つも見えなくなります。
 
 ## 3｜Google ドライブをつなぐ（🔴 経路が Notion と違う）
 
-🔴 **この plugin はドライブの接続を配っていない。配れない。**
-0.1.6 まで同梱していた `gdrive` / `gsheets` は、**誰の環境でも一度も繋がっていなかった**
-（2026-09-05 に2台で実測。`Incompatible auth server: does not support dynamic client registration`）。
-0.1.7 で外した。**ドライブは claude.ai の「コネクタ」で本人が有効にする。**
+🔴 **この plugin はドライブの接続を配っていない。配れない**（理由は troubleshooting.md の
+「なぜドライブは配れないのか」）。**ドライブは claude.ai の「コネクタ」で本人が有効にする。**
 
 🔴 **手順は `${CLAUDE_PLUGIN_ROOT}/skills/setup/google_drive.md` を読んでから進める。**
 アドレスの調べ方・コネクタが無い人の扱い・認可アカウントの読み方が全部そこにある。

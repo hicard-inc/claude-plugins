@@ -1,6 +1,6 @@
 ---
 name: setup
-description: hicard の Claude を使えるようにする。新メンバーが「セットアップして」と言ったとき、Notion と Google ドライブへの接続を最後まで通して、実際に中身が読めることを確かめる。秘密鍵の話は含まない
+description: hicard の Claude を使えるようにする。新メンバーが「セットアップして」と言ったとき、Notion をつなぎ、Google ドライブはコネクタの有無を確かめ、実際に中身が読めることを確かめる。秘密鍵の話は含まない
 disable-model-invocation: true
 argument-hint: "（引数は不要）"
 ---
@@ -35,18 +35,12 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/setup/check_setup.sh"
 
 ### `hicard プラグイン` が ❌ のとき
 
-**ターミナルで実行させる**（`/plugin` はスラッシュでは引数を取らないので効かない）：
+**ターミナルで実行させる**（`/plugin` は引数を取らないので効かない）：
+`claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins`。
+そのあと **`claude` で立ち上げ直して `/setup`**。**入れただけでは skill と MCP は差し替わらない。**再起動まで見届ける。
 
-```bash
-claude plugin marketplace add hicard-inc/claude-plugins
-claude plugin install hicard@hicard-plugins
-```
-
-そのあと **Claude Code を立ち上げ直す**（`claude` → `/setup`）。
-**入れただけでは skill と MCP は差し替わらない。**再起動まで見届けて、初めて次へ進む。
-
-🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（SSH 鍵・2FA・collaborator の
-3つのどれか）。対処は `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` の「プラグイン」。
+🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（SSH 鍵・2FA・collaborator）。
+対処は `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` の「プラグイン」。
 
 ### 1-2｜ルールを入れる（`hicard プラグイン` が ✅ になった直後・**省略しない**）
 
@@ -78,8 +72,7 @@ ls -l ~/.claude/rules/hicard.md && head -1 ~/.claude/rules/hicard.md
 入っていれば、**ルール本文から1行そのまま引用して本人に見せる**（例：章の見出し）。
 引用できなければ ✅ を書かない。
 
-⚠️ **`/context` で確かめようとしない。**スラッシュコマンドなので **Claude 自身では実行できない**
-（2026-09-05 判明）。**①②が通っていれば本人に打たせる必要もない。**
+⚠️ **`/context` は Claude 自身では実行できない**（スラッシュコマンド）。①②が通れば本人に打たせなくてよい。
 
 ### 1-3｜止めるものを入れる（**省略しない**）
 
@@ -102,8 +95,7 @@ ToolSearch  query: "+notion search recent pages"
 
 **この2つを取り違えない。**認証エラーは本人が直せる。ツールが無いのは本人には直せない。
 
-🔴 **`claude mcp list` は `cd ~` してから打つ**（リポジトリの `.mcp.json` に同じ名前があると plugin 側が隠れる）。
-**初回は全員 `! Needs authentication`。これは `✘` ではない。**読み分けは troubleshooting.md。
+**`claude mcp list` は `cd ~` で打つ。初回は全員 `! Needs authentication`（正常）。**読み分けは troubleshooting.md。
 
 > **表示された URL を開いて、Notion へのアクセスを許可してください。**
 > **ワークスペースを選ぶ画面が出たら、必ず「hicard」を選んでください。**
@@ -147,16 +139,10 @@ Notion の検索か最近のページ一覧を呼び、**返ったページを�
 
 ### ドライブ（🔴 「最近のファイル」で判定しない）
 
-「最近見たファイル」を返すツールは、**正しく設定できている新メンバーでも0件になる。**
-0件を不合格の根拠にしない。**検索ツールで名前を指定して引く。**
+手順と判定表は `${CLAUDE_PLUGIN_ROOT}/skills/setup/google_drive.md` の 3-4。
 
-Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
-
-- **合格**：共有ドライブ `001_hicard` 配下のものが返る
-- **不合格**：無い → `all@hicard.studio` に入っていないか、別アカウントで許可した
-  → 本人から管理者へ「`all@hicard.studio` に入っていますか。どのアドレスで招待しましたか」
-- **判定不能**：**検索ツールがそもそも無い**（コネクタ未有効）→ 3-2 の「コネクタが無い人」へ。
-  🔴 **これを「不合格」と書かない。**本人の権限の問題ではなく、**接続経路が用意されていない**だけ
+- **合格**：検索で共有ドライブ `001_hicard` 配下が返る（「最近見たファイル」の0件は根拠にしない）
+- **判定不能**：**検索ツールがそもそも無い**（コネクタ未有効）→ 3-2。🔴 **「不合格」と書かない**
 
 ### 片方だけ通ったとき
 
@@ -212,15 +198,15 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 🔴 **まず `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` を読む。**症状別の対処表がある。
 表に無い症状なら、推測で答えず管理者に回す。
 
-## 参照（必要になったときだけ読む）
+## 参照（必要になったときだけ読む・すべて `${CLAUDE_PLUGIN_ROOT}/skills/setup/` 配下）
 
 | ファイル | 中身 |
 |---|---|
-| `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` | 症状別の対処表・Google アカウントの繋ぎ直し |
-| `${CLAUDE_PLUGIN_ROOT}/skills/setup/access_model.md` | 誰として入るか／鍵が要らない理由／**1-3 の許可設定** |
-| `${CLAUDE_PLUGIN_ROOT}/skills/setup/github_basics.md` | Git と GitHub を触ったことがない人への説明 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/setup/google_drive.md` | **3 で必ず読む。**アドレスの調べ方・コネクタ・認可アカウントの読み方 |
-| `${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py` | 1-2 で走らせるもの。ルールを `~/.claude/rules/hicard.md` に置く |
+| `troubleshooting.md` | 症状別の対処表・Google アカウントの繋ぎ直し |
+| `access_model.md` | 誰として入るか／鍵が要らない理由／**1-3 の許可設定** |
+| `github_basics.md` | Git と GitHub を触ったことがない人への説明 |
+| `google_drive.md` | **3 と 4 で読む。**アドレスの調べ方・コネクタ・認可アカウント・**4 のドライブ判定（3-4）** |
+| `install_rules.py` | 1-2 で走らせるもの。ルールを `~/.claude/rules/hicard.md` に置く |
 
 ## 守ること
 

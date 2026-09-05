@@ -142,7 +142,7 @@ MCP servers (3)  notion, gdrive, gsheets  (tool schemas resolved at runtime; not
 
 | 配ったもの | 何が起きたか | 直した PR |
 |---|---|---|
-| 更新手順「`/plugin marketplace update` を実行」 | **`/plugin` は引数を取らない。**一覧が開くだけで、**Enter を押すと選択中の plugin がその場で入る**（zono のマシンに `superpowers` が意図せず入った） | [#4](https://github.com/hicard-inc/claude-plugins/pull/4) [#5](https://github.com/hicard-inc/claude-plugins/pull/5) |
+| 更新手順「`/plugin marketplace update` を実行」 | **`/plugin` は引数を取らない。**一覧が開くだけで、**Enter を押すと選択中の plugin がその場で入る**（管理者のマシンに `superpowers` が意図せず入った） | [#4](https://github.com/hicard-inc/claude-plugins/pull/4) [#5](https://github.com/hicard-inc/claude-plugins/pull/5) |
 | MCP 3本（`notion` / `gdrive` / `gsheets`） | **`gdrive` / `gsheets` は2台とも一度も繋がっていなかった**（`Incompatible auth server: does not support dynamic client registration`）。**`.mcp.json` に書いたことを稼働の証明に使っていた** | [#6](https://github.com/hicard-inc/claude-plugins/pull/6) |
 | ルールの確認手順「`/context` で見る」 | **`/context` はスラッシュコマンドで Claude 自身は実行できない。**さらに表示は symlink 名ではなく解決先のパス（正常な人が全員 ✘ と判定するところだった） | [#3](https://github.com/hicard-inc/claude-plugins/pull/3) [#6](https://github.com/hicard-inc/claude-plugins/pull/6) |
 
@@ -275,7 +275,7 @@ git config core.hooksPath hooks
 | **Org Member にしない** | Member は Org の**全リポジトリが見える**。クライアントワークが含まれるため |
 | **clone したら1回** | `git config core.hooksPath hooks`。**忘れるとこのリポジトリのガードは全部無効になる**（GitHub Free ではサーバー側の branch protection が使えないので、hook が唯一の担保） |
 
-read 権限を渡すコマンド（zono が実行する）：
+read 権限を渡すコマンド（Owner が実行する）：
 
 ```bash
 # 現在の権限を見る

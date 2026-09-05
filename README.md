@@ -3,7 +3,7 @@
 株式会社hicard の **Claude Code 設定（Skill・MCP）の配布元**。
 Claude Code の plugin marketplace として動く。
 
-🔒 **private リポジトリ。**インストールした人のマシンに**この中身が丸ごと落ちる**ので、
+🌐 **public リポジトリ**（2026-09-05 から）。**誰でも読めて、インストールした人のマシンに丸ごと落ちる**ので、
 **個人名・報酬・契約・評価・財務の実データは絶対に入れない**（→ [CONTRIBUTING.md](CONTRIBUTING.md)）。
 
 ## 導入（メンバー各自が1回だけ）
@@ -36,8 +36,7 @@ claude plugin install hicard@hicard-plugins
 | | 何が要るか | 無いとどうなるか |
 |---|---|---|
 | **SSH 鍵** | GitHub に登録済みの SSH 鍵 | 🔴 **`marketplace add` は `git@github.com:...` で clone する**（2026-09-05 実測）。`gh` の認証は https なので効かず、`Permission denied (publickey)` で止まる。`ssh -T git@github.com` が名前を返すことを先に確認する |
-| **2FA** | 🔴 **認証アプリかパスキー。**hicard-inc は「セキュアな2FA必須」で **SMS は不可** | Org のリポジトリ操作が **403** になる（2026-09-05 実測）。**管理者側では直せない。**本人が GitHub の設定で切り替える |
-| **collaborator** | `claude-plugins` への read 権限 | `Repository not found` |
+| **2FA** | **このリポジトリを直す人（Owner）だけ。**認証アプリかパスキー（hicard-inc は **SMS 不可**） | 読むだけなら要らない（public）。push する側は Org の要件で **403** になる（2026-09-05 実測）。**管理者側では直せない。**本人が GitHub の設定で切り替える |
 | **Node.js / npm** | `/slides` を使うときだけ | `node: command not found`。`/setup` には要らない |
 
 ## 更新（月1回くらい）
@@ -142,7 +141,8 @@ hooks/                              ← pre-push hook の配布物（下記）
 **粒度の基準（4層＋3関門）とレビュー手順は [CONTRIBUTING.md](CONTRIBUTING.md) が正本。**
 **読まずに足すと必ず混ざる。**
 
-`main` を守る仕組みは [hooks/](hooks/) にある（Free プランでは branch protection が使えないため）。
+`main` は GitHub 側の branch protection で守られている（**PR 必須・直接 push と force push と削除を禁止・管理者にも適用**。2026-09-05 に public 化して有効にした）。
+[hooks/](hooks/) は push 前に手元で**版の食い違いと鍵の混入**を見る二重目のガードで、この2つは GitHub 側では止まらない。
 **clone した人が各自1回**これを有効にする：
 
 ```bash

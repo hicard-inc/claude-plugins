@@ -84,9 +84,19 @@ fi
 #    中身の作り方と「わざと1回止める」手順は skills/setup/access_model.md の 4。
 DENY_LINE=$(python3 - "$HOME/.claude/settings.json" <<'PYEOF' 2>/dev/null
 import json, os, sys
-want = ["Bash(rm:*)", "Bash(sudo:*)", "Bash(git push --force:*)",
-        "Bash(git push -f:*)", "Read(**/.env*)", "Write(**/.env*)",
-        "Read(**/.ssh/**)", "Read(**/secrets/**)", "Read(**/*credential*)"]
+want = ["Bash(rm:*)",
+        "Bash(sudo:*)",
+        "Bash(git push --force:*)",
+        "Bash(git push -f:*)",
+        "Read(**/.env*)",
+        "Read(**/*.env)",
+        "Read(~/**/.env*)",
+        "Read(~/**/*.env)",
+        "Write(**/.env*)",
+        "Write(~/**/.env*)",
+        "Read(~/**/.ssh/**)",
+        "Read(~/**/secrets/**)",
+        "Read(~/**/*credential*)"]
 p = sys.argv[1]
 if not os.path.exists(p):
     print("ng\t~/.claude/settings.json が無い")

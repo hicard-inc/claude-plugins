@@ -39,7 +39,7 @@
 ### 🔴 `/plugin` を開かせない（2026-09-04 実測）
 
 **一覧で Enter を押すと、選択中の plugin がその場で入る。**
-2026-09-04 に zono のマシンで `superpowers`（Skill 14本・**~690 tok/セッション**）と
+2026-09-04 に管理者のマシンで `superpowers`（Skill 14本・**~690 tok/セッション**）と
 `code-review` が意図せず入った。どちらも `/plugin update ...` と打って一覧が開き、
 **そのまま Enter を押した結果**。`hicard` 自体が ~314 tok なので、その2倍が乗っていた。
 
@@ -161,7 +161,7 @@ ModuleNotFoundError: No module named 'mcp.server.fastmcp'
 ### 🔴 なぜドライブは配れないのか（2026-09-05 実測・0.1.7 で外した）
 
 0.1.6 まで `.mcp.json` に `gdrive` / `gsheets` を同梱していたが、**誰の環境でも一度も繋がっていなかった。**
-zono と ishikawa の2台で `claude mcp list` が同じものを返す：
+Owner 2名のマシンで `claude mcp list` が同じものを返す：
 
 ```
 plugin:hicard:gdrive:  ✘ Failed to connect — Incompatible auth server: does not support dynamic client registration

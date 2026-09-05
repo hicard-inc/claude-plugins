@@ -21,7 +21,7 @@ claude plugin install hicard@hicard-plugins
 /setup
 ```
 
-`/setup` が Notion と Google ドライブへの接続を最後まで通し、**実際に中身が読めることを確かめる**。
+`/setup` が Notion への接続を最後まで通し、Google ドライブはコネクタの有無を確かめ、**実際に中身が読めることを確かめる**。
 
 `/setup` は**運用ルール（[RULES.md](RULES.md)）を `~/.claude/rules/hicard.md` に置くところまでやる**。
 🔴 **プラグインは道具しか配れない。**Claude Code の仕様上、plugin から `CLAUDE.md` と
@@ -58,7 +58,7 @@ Claude Code 2.1.260 の `/plugin` は**引数を取らず、対話ブラウザ�
 （VSCode 拡張ではこの `/plugin` 自体が使えない）。**しかも危険なのは開いたあと。**
 
 **一覧で Enter を押すと、選択中の plugin がその場でインストールされる。**
-2026-09-04 に zono のマシンで**意図しない plugin が2つ入った**（実測）:
+2026-09-04 に管理者のマシンで**意図しない plugin が2つ入った**（実測）:
 
 | 入ったもの | 常時コスト |
 |---|---|
@@ -84,7 +84,7 @@ claude plugin uninstall <plugin>@<marketplace>
 
 | Skill | 何をするもの | 起動 |
 |---|---|---|
-| `setup` | hicard の Claude を使えるようにする（Notion・Google ドライブの接続を通す） | `/setup`（**人が呼ぶだけ**） |
+| `setup` | hicard の Claude を使えるようにする（Notion をつなぎ、ドライブのコネクタを確かめる） | `/setup`（**人が呼ぶだけ**） |
 | `research` | 調査を始める前・レポートを出す前に踏む手順 | `/research` ／ Claude の自己判断でも起動する |
 | `slides` | 登壇・社内共有のスライドを1本作る手順 | `/slides`（**人が呼ぶだけ**） |
 | `tasks` | Notion `[PJ] Tasks` の状況を見る | `/tasks` ／ Claude の自己判断でも起動する |
@@ -103,7 +103,7 @@ claude plugin uninstall <plugin>@<marketplace>
 
 0.1.6 まで `gdrive`（`drivemcp.googleapis.com`）と `gsheets`（`sheetsmcp.googleapis.com`）を
 同梱していたが、**誰の環境でも一度も繋がっていなかった。**
-2026-09-05 に2台（zono・ishikawa）で `claude mcp list` が同じものを返す：
+2026-09-05 に Owner 2名のマシンで `claude mcp list` が同じものを返す：
 
 ```
 plugin:hicard:gdrive:  ✘ Failed to connect — Incompatible auth server: does not support dynamic client registration

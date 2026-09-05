@@ -82,24 +82,14 @@ fi
 # ── 許可設定（deny）──────────────────────────────────────────
 # 🔴 読むだけ。このスクリプトは settings.json を書き換えない（Claude はそもそも書けない）。
 #    中身の作り方と「わざと1回止める」手順は skills/setup/access_model.md の 4。
-DENY_LINE=$(python3 - "$HOME/.claude/settings.json" <<'PYEOF' 2>/dev/null
+DENY_JSON="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/deny.json"   # 推奨 deny の正本（access_model.md もこれを指す）
+DENY_LINE=$(python3 - "$HOME/.claude/settings.json" "$DENY_JSON" <<'PYEOF' 2>/dev/null
 import json, os, sys
-want = ["Bash(rm:*)",
-        "Bash(sudo:*)",
-        "Bash(git push --force:*)",
-        "Bash(git push -f:*)",
-        "Read(**/.env*)",
-        "Read(**/*.env)",
-        "Read(~/**/.env*)",
-        "Read(~/**/*.env)",
-        "Write(**/.env*)",
-        "Write(~/**/.env*)",
-        "Read(**/.ssh/**)",
-        "Read(~/**/.ssh/**)",
-        "Read(**/secrets/**)",
-        "Read(~/**/secrets/**)",
-        "Read(**/*credential*)",
-        "Read(~/**/*credential*)"]
+try:
+    want = json.load(open(sys.argv[2], encoding="utf-8"))["permissions"]["deny"]
+except Exception as e:
+    print("ng\tdeny.json（推奨一覧の正本）が読めない（%s）" % type(e).__name__)
+    raise SystemExit
 p = sys.argv[1]
 if not os.path.exists(p):
     print("ng\t~/.claude/settings.json が無い")

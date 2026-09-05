@@ -133,7 +133,8 @@ plugins/hicard/
   .claude-plugin/plugin.json        ← plugin の定義
   .mcp.json                         ← 配る MCP サーバー（notion のみ）
   skills/<名前>/SKILL.md            ← 本体。補助ファイルは同じフォルダに置く
-hooks/                              ← pre-push hook の配布物（下記）
+hooks/                              ← pre-push hook と Claude Code hook の配布物（下記）
+.claude/settings.json               ← Claude Code の project hook（commit / push 前の検査）
 ```
 
 ## このリポジトリを直す人へ
@@ -150,3 +151,5 @@ git config core.hooksPath hooks
 ```
 
 これで **`main` への直 push が止まり、シークレットらしき文字列の混入も push 前に検出される。**
+
+**Claude Code でこのフォルダを開いて commit / push する人**は、上の設定を Claude Code が自動で入れ、`git commit` / `git push` の直前に版・鍵・禁止語を検査して止める hook も付く（[.claude/settings.json](.claude/settings.json)）。禁止語一覧の設定手順は [CONTRIBUTING.md](CONTRIBUTING.md) の 8 章。

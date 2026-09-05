@@ -275,6 +275,7 @@ git config core.hooksPath hooks
 | **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み）。**collaborator も Org Member も足さない** |
 | **`main` の保護（GitHub 側）** | **PR 必須・直接 push 禁止・force push 禁止・削除禁止・管理者にも適用**（`enforce_admins`）。2026-09-05 に設定し、API の GET で確認済み。**Owner でも `main` へは PR を経ないと入らない** |
 | **clone したら1回** | `git config core.hooksPath hooks`。push 前に手元で**版の食い違いと鍵の混入**を見る。**public では push した瞬間に世界に見える**ので、push 前に止められるのはこの hook と下の Push protection だけ。PR テンプレートに有効化のチェック欄がある |
+| **Claude Code から commit / push するとき（2026-09-06 追加）** | このリポジトリの `.claude/settings.json` に **project hook** が入っている。Claude Code をこのフォルダで起動すると、**開いた時点で `core.hooksPath` を自動設定**し、Claude が `git commit` / `git push` を打つ**直前に版・鍵・禁止語を検査して、落ちたらコマンドを止め、理由を Claude に返す**（Claude が本人に伝える）。手順は 8 章 |
 | **Push protection（GitHub 側・2026-09-05 ON）** | Secret scanning ＋ Push protection。**既知の約 200 社のトークン形式は push 時にサーバー側で拒否**される（Owner・admin にも効く。バイパスは可能だが Security タブに記録が残る） |
 | **必須チェック `checks`（Actions・2026-09-05 ON）** | PR ごとに `hooks/check_versions.py`・`hooks/check_secrets.py --all`・`hooks/check_blocklist.py` が走り、**落ちると `main` にマージできない**（branch protection の required status check）。ローカル hook と同じスクリプトなので判定はずれない |
 | **禁止語一覧 `BLOCKLIST`** | クライアント名・人名など「パターンで書ける不要な情報」の正規表現（`\|` 区切り・大文字小文字を区別しない）。🔴 **public なので一覧はリポジトリに置かず、Actions の secret に入れる**（`gh secret set BLOCKLIST -R hicard-inc/claude-plugins`・Owner だけが更新できる）。**空だとチェックは失敗する**（守っていない状態で通さない）。ログには当たった場所しか出ない。**一覧に無い語は通る**ので、文脈で決まる情報（報酬額・評価）は人のレビューで見る |
@@ -300,3 +301,48 @@ gh secret list -R hicard-inc/claude-plugins   # BLOCKLIST が並ぶこと（中�
 
 **禁止語で PR が落ちたとき**: ログの `path:line` を手元で開いて直す。語そのものを確認したいときは Owner に聞く（一覧は secret の中）。
 テスト用の偽データなど正当な例外は、`check_secrets.py` は `ci:allow-secret` の注記で通せるが、**禁止語には例外の仕組みを作っていない**（例外を作ると一覧の意味が無くなる）。
+
+## 8. Owner のセットアップ（Claude Code で commit / push する人向け・2026-09-06 追加）
+
+7 章の GitHub 側の層は **push された後**に効く。public なので、**push した瞬間に世界に見える**ものを
+push の前に止めるには、手元の層が要る。手元は Claude Code から git を打つのが普通なので、
+**Claude Code の hook**（`.claude/settings.json`・リポジトリに入っている）で止める。
+
+| 層 | いつ | 何を見る | 落ちたとき |
+|---|---|---|---|
+| Claude Code の `PreToolUse`（`hooks/claude_guard.sh`） | Claude が `git commit` / `git push` を打つ**直前** | 版の食い違い・鍵・禁止語（`git config hicard.blocklist`）・`--no-verify`・force | コマンドが実行されず、理由が Claude に返る |
+| git の `pre-push`（`hooks/pre-push`） | 手打ちの push でも | 版・`main` 直 push・差分内の鍵 | push が止まる |
+| GitHub（Push protection・Actions `checks`・branch protection） | push 後 | 既知のトークン形式・版・鍵・禁止語（`BLOCKLIST`） | `main` に入らない |
+
+`.claude/settings.json` の `SessionStart` が `git config core.hooksPath hooks` を自動で入れるので、2層目の打ち忘れも無くなる。
+
+### 手順（clone したあと Claude Code に貼る）
+
+禁止語一覧は public のリポジトリに書けないので、**`.git/config` に置く**（commit されない・clone ごとに1回）。
+一覧の中身は Owner 同士で別経路（Slack の DM など）で渡す。**この文書にもチャットログにも書かない。**
+
+Claude Code をこのリポジトリのフォルダで起動し（初回は「このフォルダの hook を信頼するか」の確認が出るので承諾する）、次を貼る：
+
+```
+このリポジトリ（hicard-inc/claude-plugins）で commit / push できるように準備して。
+1. git config core.hooksPath が hooks になっているか見て、違えば git config core.hooksPath hooks を実行
+2. 禁止語一覧を設定する。値はこれ（Owner から受け取った値をここに貼る。正規表現・| 区切り）:
+   git config hicard.blocklist '<ここに一覧>'
+   設定後、値そのものは会話に出さず、git config --get hicard.blocklist | wc -c で文字数だけ報告
+3. bash hooks/claude_guard.sh --self-test を実行して「✓」と「pre-push hook 有効」が出ることを確かめる
+4. 「わざと失敗させる」確認: git config hicard.blocklist を一時的に 'セットアップ状態' に変えて
+   bash hooks/claude_guard.sh --self-test が exit 2 で止まることを見てから、2 の値に戻す
+以後この repo では --no-verify と force push は使わない。検査で止まったら迂回せず理由を私に見せる。
+```
+
+期待する結果: 3 で `✓ claude_guard: 版・鍵・禁止語 すべて通過（pre-push hook 有効）`、4 で
+`✗ 置いてはいけない語が N 箇所` と `path:line` が出て止まる。**止まるのを一度見ていない guard は動いている保証が無い**（RULES.md 5 章）。
+
+### 分かっていること・限界
+
+- **Claude Code を別のフォルダで起動して `git -C <このrepo> push` と打った場合、この hook は走らない**（project hook は起動したフォルダの設定）。その場合は 2 層目（`pre-push`）と 3 層目が残る
+- `hicard.blocklist` が**未設定のまま commit / push すると止まる**（警告ではなく停止。守っていない状態で通さない）。一覧を持っていない人は Owner に聞く
+- 一覧は `.git/config` にあるので、**clone をやり直したら消える**。もう一度 2 を実行する
+- GitHub の **push ruleset（ファイルパスで push 自体を拒否）は public の Free では作れない**（2026-09-05 実測: API が 422 "Source public repos cannot have push rules"）。だから手元の層で止める
+- メンバーの `marketplace add` で落ちる clone にもこの `.claude/settings.json` は入るが、**メンバーはそのフォルダで Claude を起動しないので影響しない**
+

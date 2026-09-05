@@ -76,8 +76,15 @@ plugin のインストールは **`git clone`**。**この中身はインスト�
 **新しい Skill を足したら、測り直す。**目安で済ませない：
 
 ```bash
-claude plugin details hicard    # 常時コストと、スキルごとの呼び出し時コストが出る
+claude plugin details hicard    # 常時コストと、スキルごとの呼び出し時コストが出る（frontmatter からの見積もり）
+claude -p "/skill-doctor" --output-format text   # 2.1.252 以降。system prompt に実際に載っている行のトークンと、直近7日の呼び出し回数
 ```
+
+**2つは違うものを測っている。**`plugin details` は定義から見積もる。`/skill-doctor` は**今のセッションの
+system prompt に載っている一覧行**を測るので、人が呼ぶだけの Skill（`disable-model-invocation: true` の
+setup・slides）は一覧に載らず `-`（0）と出る（2026-09-05 実測: research ~20・tasks ~20・setup と slides は `-`）。
+**常時コストの実測は `/skill-doctor`、呼び出し時コストは `plugin details`。**`/skill-doctor` は対話中に打つと
+`/plugin` の Stats タブが開くので、🔴 **Enter を押さない**（一覧で Enter を押すと plugin が入る・7 章）。上の `-p` 版なら開かない。
 
 現状の実測（**0.1.15**・2026-09-05）。**常時 ~322 トークン**、呼び出し時は
 **setup ~4.6k** / slides ~4.6k / research ~2.9k / tasks ~2.1k ＝合計 ~14.2k。
@@ -86,6 +93,7 @@ claude plugin details hicard    # 常時コストと、スキルごとの呼び�
 🔴 **setup は 0.1.11〜0.1.14 で上限 5,000 に到達していた**（表示 ~5k・6,645 字）。
 [#18](https://github.com/hicard-inc/claude-plugins/pull/18) でドライブの合否判定を `google_drive.md` へ出し、
 重複していた手順を削って **6,179 字・~4.6k に戻した。**余裕は ~400 トークン（≒500 字）。**次に足すときも参照資料へ。**
+0.1.17 で自動更新と https clone の文言を足して **6,264 字**（見積もり ~4.6k・上限まで残り ~440 字）。
 経緯: 0.1.1 で 4.4k → 追記を重ねて 0.1.6 で **5.3k と上限を超えていた**（測るまで誰も気づいていない）。
 [#6](https://github.com/hicard-inc/claude-plugins/pull/6) で参照資料（`google_drive.md`）を
 切り出して 4.9k に戻し、0.1.7〜0.1.10 は**参照資料側だけを増やして 4.9k を維持していた。**
@@ -271,13 +279,13 @@ git config core.hooksPath hooks
 
 | | 決めごと |
 |---|---|
-| **読む（clone・インストール）** | **public。**誰でも読める。**新メンバーに招待は要らない**（要るのは GitHub アカウントと SSH 鍵だけ。`marketplace add` は SSH で clone する） |
+| **読む（clone・インストール）** | **public。**誰でも読める。**新メンバーに招待は要らない**（GitHub アカウントも SSH 鍵も要らない。ただし `marketplace add` の既定は SSH clone なので、先頭に `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` を付ける。README 参照） |
 | **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み）。**collaborator も Org Member も足さない** |
 | **`main` の保護（GitHub 側）** | **PR 必須・直接 push 禁止・force push 禁止・削除禁止・管理者にも適用**（`enforce_admins`）。2026-09-05 に設定し、API の GET で確認済み。**Owner でも `main` へは PR を経ないと入らない** |
 | **clone したら1回** | `git config core.hooksPath hooks`。push 前に手元で**版の食い違いと鍵の混入**を見る。**public では push した瞬間に世界に見える**ので、push 前に止められるのはこの hook と下の Push protection だけ。PR テンプレートに有効化のチェック欄がある |
 | **Claude Code から commit / push するとき（2026-09-06 追加）** | このリポジトリの `.claude/settings.json` に **project hook** が入っている。Claude Code をこのフォルダで起動すると、**開いた時点で `core.hooksPath` を自動設定**し、Claude が `git commit` / `git push` を打つ**直前に版・鍵・禁止語を検査して、落ちたらコマンドを止め、理由を Claude に返す**（Claude が本人に伝える）。手順は 8 章 |
 | **Push protection（GitHub 側・2026-09-05 ON）** | Secret scanning ＋ Push protection。**既知の約 200 社のトークン形式は push 時にサーバー側で拒否**される（Owner・admin にも効く。バイパスは可能だが Security タブに記録が残る） |
-| **必須チェック `checks`（Actions・2026-09-05 ON）** | PR ごとに `hooks/check_versions.py`・`hooks/check_secrets.py --all`・`hooks/check_blocklist.py` が走り、**落ちると `main` にマージできない**（branch protection の required status check）。ローカル hook と同じスクリプトなので判定はずれない |
+| **必須チェック `checks`（Actions・2026-09-05 ON）** | PR ごとに `hooks/check_versions.py`・`hooks/check_secrets.py --all`・`hooks/check_blocklist.py`・**`claude plugin validate --strict`**（公式・2026-09-06 追加。`npm install -g @anthropic-ai/claude-code` してから plugin と marketplace の両方を検査。ログイン不要・実測）が走り、**落ちると `main` にマージできない**（branch protection の required status check）。ローカル hook と同じスクリプトなので判定はずれない |
 | **禁止語一覧 `BLOCKLIST`** | クライアント名・人名など「パターンで書ける不要な情報」の正規表現（`\|` 区切り・大文字小文字を区別しない）。🔴 **public なので一覧はリポジトリに置かず、Actions の secret に入れる**（`gh secret set BLOCKLIST -R hicard-inc/claude-plugins`・Owner だけが更新できる）。**空だとチェックは失敗する**（守っていない状態で通さない）。ログには当たった場所しか出ない。**一覧に無い語は通る**ので、文脈で決まる情報（報酬額・評価）は人のレビューで見る |
 | **public に切り替えた理由** | private では Org Free の制約で branch protection が使えず（403）、新メンバーごとに outside collaborator の招待が要り、**招待前は誰も clone できなかった**。中身は最初から「全員のマシンに落ちる前提」で書いているので、公開範囲が広がっても入れてよいものの基準（0章）は変わらない |
 
@@ -312,7 +320,7 @@ push の前に止めるには、手元の層が要る。手元は Claude Code �
 |---|---|---|---|
 | Claude Code の `PreToolUse`（`hooks/claude_guard.sh`） | Claude が `git commit` / `git push` を打つ**直前** | 版の食い違い・鍵・禁止語（`git config hicard.blocklist`）・`--no-verify`・force | コマンドが実行されず、理由が Claude に返る |
 | git の `pre-push`（`hooks/pre-push`） | 手打ちの push でも | 版・`main` 直 push・差分内の鍵 | push が止まる |
-| GitHub（Push protection・Actions `checks`・branch protection） | push 後 | 既知のトークン形式・版・鍵・禁止語（`BLOCKLIST`） | `main` に入らない |
+| GitHub（Push protection・Actions `checks`・branch protection） | push 後 | 既知のトークン形式・版・鍵・禁止語（`BLOCKLIST`）・plugin 定義（`validate --strict`） | `main` に入らない |
 
 `.claude/settings.json` の `SessionStart` が `git config core.hooksPath hooks` を自動で入れるので、2層目の打ち忘れも無くなる。
 

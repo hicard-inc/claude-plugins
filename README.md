@@ -11,9 +11,13 @@ Claude Code の plugin marketplace として動く。
 **ターミナルで**（Claude Code の中ではなく）：
 
 ```bash
-claude plugin marketplace add hicard-inc/claude-plugins
+CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 claude plugin marketplace add hicard-inc/claude-plugins
 claude plugin install hicard@hicard-plugins
 ```
+
+先頭の `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` は **1行目にだけ要る。**省くと Claude Code は既定で SSH（`git@github.com:...`）で
+clone しようとし、SSH 鍵の無い人は止まる（2026-09-05 実測・公式ドキュメントにも「GitHub sources clone via SSH by default」）。
+付けて clone したあとの `update` は https のまま動く（実測）。
 
 そのあと `claude` で立ち上げて：
 
@@ -31,17 +35,27 @@ claude plugin install hicard@hicard-plugins
 `~/.claude/settings.json` を触りたくない人は、そのプロジェクトの `.claude/settings.local.json`
 に入る local スコープでよい（2026-09-05 実測で両方通る）。
 
-### 前提条件（🔴 `gh auth login` では足りない）
+### 前提条件（🔴 `gh auth login` は関係ない）
 
 | | 何が要るか | 無いとどうなるか |
 |---|---|---|
-| **SSH 鍵** | GitHub に登録済みの SSH 鍵 | 🔴 **`marketplace add` は `git@github.com:...` で clone する**（2026-09-05 実測）。`gh` の認証は https なので効かず、`Permission denied (publickey)` で止まる。`ssh -T git@github.com` が名前を返すことを先に確認する |
+| **SSH 鍵・GitHub アカウント** | **要らない**（public を https で読むだけ） | 🔴 ただし `marketplace add` の先頭に `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` を**付け忘れると** `git@github.com:...` で clone しようとして `Permission denied (publickey)` で止まる（2026-09-05 実測・既定が SSH）。`gh auth login` は https なので関係ない。**付け直して打ち直せば済む。**鍵を作らせない |
 | **2FA** | **このリポジトリを直す人（Owner）だけ。**認証アプリかパスキー（hicard-inc は **SMS 不可**） | 読むだけなら要らない（public）。push する側は Org の要件で **403** になる（2026-09-05 実測）。**管理者側では直せない。**本人が GitHub の設定で切り替える |
 | **Node.js / npm** | `/slides` を使うときだけ | `node: command not found`。`/setup` には要らない |
 
-## 更新（月1回くらい）
+## 更新（自動。ふだんは何もしなくてよい）
 
-**ターミナルで**（Claude Code を閉じてから）：
+`/setup` の 1-3 で貼る設定（[deny.json](plugins/hicard/skills/setup/deny.json)）に
+**`extraKnownMarketplaces.hicard-plugins.autoUpdate: true`** が入っている（0.1.17 から）。
+Claude Code は起動後に配布元を背景で取り直し、**次に `claude` を立ち上げたときに新しい版が入る。**
+
+🔴 **この marketplace は「第三者」扱いなので、既定では自動更新が切れている**（公式ドキュメント:
+Third-party and local development marketplaces have auto-update disabled by default）。
+**設定を貼っていない人には届かない。**`check_setup.sh` の「自動更新」行が ❌ ならそれ。
+貼って起動すると `~/.claude/plugins/known_marketplaces.json` に `autoUpdate: true` が写る（2026-09-05 実測）。
+⚠️ **新しい版が実際に自動で届くところは 0.1.17 の配布で確かめる**（この時点では未実測）。
+
+**今すぐ欲しいとき・自動更新を入れていないとき**は、**ターミナルで**（Claude Code を閉じてから）：
 
 ```bash
 claude plugin marketplace update hicard-plugins
@@ -143,7 +157,7 @@ hooks/                              ← pre-push hook と Claude Code hook の�
 **読まずに足すと必ず混ざる。**
 
 `main` は GitHub 側の branch protection で守られている（**PR 必須・直接 push と force push と削除を禁止・管理者にも適用**。2026-09-05 に public 化して有効にした）。
-[hooks/](hooks/) は push 前に手元で**版の食い違いと鍵の混入**を見る二重目のガードで、この2つは GitHub 側では止まらない。
+[hooks/](hooks/) は push 前に手元で**版の食い違い・plugin 定義（`claude plugin validate --strict`・claude が入っていれば）・鍵の混入**を見る二重目のガードで、この2つは GitHub 側では止まらない。
 **clone した人が各自1回**これを有効にする：
 
 ```bash

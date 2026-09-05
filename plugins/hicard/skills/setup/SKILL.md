@@ -36,10 +36,10 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/setup/check_setup.sh"
 ### `hicard プラグイン` が ❌ のとき
 
 **ターミナルで実行させる**（`/plugin` は引数を取らないので効かない）：
-`claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins`。
+`CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins`。
 そのあと **`claude` で立ち上げ直して `/setup`**。**入れただけでは skill と MCP は差し替わらない。**再起動まで見届ける。
 
-🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（SSH 鍵か、つづりの間違い。招待は要らない）。
+🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（先頭の `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` の付け忘れか、つづり。招待も SSH 鍵も要らない）。
 対処は `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` の「プラグイン」。
 
 ### 1-2｜ルールを入れる（`hicard プラグイン` が ✅ になった直後・**省略しない**）
@@ -53,7 +53,7 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py"
 
 | 出力 | 判定 |
 |---|---|
-| `OK  symlink` | **これが正常。**以後 `claude plugin marketplace update` だけでルールも最新になる |
+| `OK  symlink` | **これが正常。**以後、更新が届けばルールも一緒に最新になる |
 | `OK  コピー` | 動くが**自動では更新されない。**更新のたびに `/setup` を打ち直す必要があると本人に伝える |
 | `NG` | 先にターミナルで `claude plugin marketplace update hicard-plugins` を実行してからやり直す |
 
@@ -74,7 +74,7 @@ ls -l ~/.claude/rules/hicard.md && head -1 ~/.claude/rules/hicard.md
 
 ⚠️ **`/context` は Claude 自身では実行できない**（スラッシュコマンド）。①②が通れば本人に打たせなくてよい。
 
-### 1-3｜止めるものを入れる（**省略しない**）
+### 1-3｜止めるものと自動更新を入れる（**省略しない**）
 
 🔴 **access_model.md の 4 を読んでから進める**（パスは下の参照表）。
 **Claude はこのファイルを書けない。**本人に貼ってもらい、**1回わざと止まるまで見届ける。**
@@ -186,10 +186,10 @@ Notion の検索か最近のページ一覧を呼び、**返ったページを�
 - 始めるとき  ターミナルで claude
 - あとは普通に話しかけてください。保存も共有も私がやります
 
-月に1回くらい、ターミナルで次の2行を実行してください（新しい手順が入ります）。
+新しい手順は自動で届きます（さきほど貼った設定に入っています）。反映は次に claude を立ち上げたとき。
+すぐ欲しいときだけ、ターミナルで次の2行を実行してから claude で立ち上げ直してください。
   claude plugin marketplace update hicard-plugins
   claude plugin update hicard@hicard-plugins
-そのあと claude で立ち上げ直すところまでが一組です。
 （Claude Code の中で /plugin と打つと一覧が開くだけで、更新はされません）
 ```
 

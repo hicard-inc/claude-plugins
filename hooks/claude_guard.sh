@@ -32,10 +32,15 @@ if [ -f hooks/check_versions.py ]; then
   R="$(python3 hooks/check_versions.py --quiet 2>&1)" || OUT="$OUT$R"$'\n'
 fi
 R="$(python3 hooks/check_secrets.py --all --quiet 2>&1)" || OUT="$OUT$R"$'\n'
+if [ -f .claude-plugin/marketplace.json ] && command -v claude >/dev/null 2>&1; then
+  for T in . plugins/*/; do
+    R="$(claude plugin validate --strict "$T" 2>&1)" || OUT="${OUT}✗ claude plugin validate --strict $T:"$'\n'"$(echo "$R" | tail -5)"$'\n'
+  done
+fi
 
 BL="$(git config --get hicard.blocklist)"
 if [ -z "$BL" ]; then
-  OUT="$OUT✗ 禁止語一覧（git config hicard.blocklist）が未設定。Owner に一覧を聞いて次を実行する:"$'\n'"    git config hicard.blocklist '語1|語2'"$'\n'
+  OUT="${OUT}✗ 禁止語一覧（git config hicard.blocklist）が未設定。Owner に一覧を聞いて次を実行する:"$'\n'"    git config hicard.blocklist '語1|語2'"$'\n'
 else
   R="$(BLOCKLIST="$BL" python3 hooks/check_blocklist.py 2>&1)" || OUT="$OUT$R"$'\n'
 fi

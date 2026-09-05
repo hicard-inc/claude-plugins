@@ -1,5 +1,6 @@
 # PR ごとに走り、branch protection の必須チェック「checks」になる。落ちると main にマージできない。
-# 3つとも hooks/ の同じスクリプト（ローカル pre-push と同じ判定をサーバー側でもう一度やる）。
+# 3つは hooks/ の同じスクリプト（ローカル pre-push と同じ判定をサーバー側でもう一度やる）。
+# 4つ目は公式の claude plugin validate --strict（plugin と marketplace の定義が壊れていないか）。
 name: checks
 on:
   pull_request:
@@ -20,3 +21,8 @@ jobs:
         env:
           BLOCKLIST: ${{ secrets.BLOCKLIST }}
         run: python3 hooks/check_blocklist.py
+      - name: plugin と marketplace の定義（公式 claude plugin validate --strict・ログイン不要）
+        run: |
+          npm install -g @anthropic-ai/claude-code
+          claude plugin validate --strict plugins/hicard
+          claude plugin validate --strict .

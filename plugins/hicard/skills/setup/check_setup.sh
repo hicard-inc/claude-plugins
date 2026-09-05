@@ -79,6 +79,41 @@ else
   check "git の名乗り" "ok" "$GIT_NAME <$GIT_EMAIL>"
 fi
 
+# ── 許可設定（deny）──────────────────────────────────────────
+# 🔴 読むだけ。このスクリプトは settings.json を書き換えない（Claude はそもそも書けない）。
+#    中身の作り方と「わざと1回止める」手順は skills/setup/access_model.md の 4。
+DENY_LINE=$(python3 - "$HOME/.claude/settings.json" <<'PYEOF' 2>/dev/null
+import json, os, sys
+want = ["Bash(rm:*)", "Bash(sudo:*)", "Bash(git push --force:*)",
+        "Bash(git push -f:*)", "Read(**/.env*)", "Write(**/.env*)",
+        "Read(**/.ssh/**)", "Read(**/secrets/**)", "Read(**/*credential*)"]
+p = sys.argv[1]
+if not os.path.exists(p):
+    print("ng\t~/.claude/settings.json が無い")
+    raise SystemExit
+try:
+    deny = (json.load(open(p, encoding="utf-8")).get("permissions") or {}).get("deny") or []
+except Exception as e:
+    print("ng\tJSON として壊れている（%s）。直すまで deny は1件も効かない" % type(e).__name__)
+    raise SystemExit
+missing = [w for w in want if w not in deny]
+if len(missing) == len(want):
+    print("ng\tdeny が1件も入っていない")
+elif missing:
+    print("warn\t足りない %d 件: %s" % (len(missing), " ".join(missing)))
+else:
+    print("ok\tdeny %d 件（推奨 %d 件すべて）" % (len(deny), len(want)))
+PYEOF
+)
+[ -z "$DENY_LINE" ] && DENY_LINE=$'ng\t判定できなかった（python3 が無い）'
+DENY_ST=${DENY_LINE%%$'\t'*}
+DENY_MSG=${DENY_LINE#*$'\t'}
+case "$DENY_ST" in
+  ok)   check "許可設定（deny）" "ok"  "$DENY_MSG" ;;
+  warn) warn  "許可設定（deny）"       "$DENY_MSG" ;;
+  *)    check "許可設定（deny）" "ng"  "$DENY_MSG → access_model.md の 4 を本人の手で貼る" ;;
+esac
+
 echo ""
 echo "【/setup には要らないが、/slides には必須】"
 # 🔴 「任意」と書くと、/slides を使う人が入れずに始めて node: command not found で止まる。

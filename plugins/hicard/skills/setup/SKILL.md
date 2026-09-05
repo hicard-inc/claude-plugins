@@ -11,7 +11,7 @@ argument-hint: "（引数は不要）"
 **途中で「進めてよいですか」と聞かない。**詰まったところだけ報告する。
 
 🔴 **この手順の実行中は秘密鍵を確認しない。**
-新メンバーのマシンに鍵が無いのは**正常**（→ `${CLAUDE_PLUGIN_ROOT}/skills/setup/access_model.md`）。
+新メンバーのマシンに鍵が無いのは**正常**（→ access_model.md）。
 確認すると手順が止まり、「自分の環境は欠けている」と誤解させる。**報告する表にも鍵の行を出さない。**
 
 ## 1｜現状を見る
@@ -80,6 +80,11 @@ ls -l ~/.claude/rules/hicard.md && head -1 ~/.claude/rules/hicard.md
 
 ⚠️ **`/context` で確かめようとしない。**スラッシュコマンドなので **Claude 自身では実行できない**
 （2026-09-05 判明）。**①②が通っていれば本人に打たせる必要もない。**
+
+### 1-3｜止めるものを入れる（**省略しない**）
+
+🔴 **access_model.md の 4 を読んでから進める**（パスは下の参照表）。
+**Claude はこのファイルを書けない。**本人に貼ってもらい、**1回わざと止まるまで見届ける。**
 
 ## 2｜Notion をつなぐ
 
@@ -212,7 +217,7 @@ Drive の検索ツールを `query: "title = '01_Projects'"` で呼ぶ。
 | ファイル | 中身 |
 |---|---|
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` | 症状別の対処表・Google アカウントの繋ぎ直し |
-| `${CLAUDE_PLUGIN_ROOT}/skills/setup/access_model.md` | 誰として入るか／なぜ一般メンバーに鍵が要らないか |
+| `${CLAUDE_PLUGIN_ROOT}/skills/setup/access_model.md` | 誰として入るか／鍵が要らない理由／**1-3 の許可設定** |
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/github_basics.md` | Git と GitHub を触ったことがない人への説明 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/google_drive.md` | **3 で必ず読む。**アドレスの調べ方・コネクタ・認可アカウントの読み方 |
 | `${CLAUDE_PLUGIN_ROOT}/skills/setup/install_rules.py` | 1-2 で走らせるもの。ルールを `~/.claude/rules/hicard.md` に置く |

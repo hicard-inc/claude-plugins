@@ -39,7 +39,7 @@ bash "${CLAUDE_PLUGIN_ROOT}/skills/setup/check_setup.sh"
 `claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins`。
 そのあと **`claude` で立ち上げ直して `/setup`**。**入れただけでは skill と MCP は差し替わらない。**再起動まで見届ける。
 
-🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（SSH 鍵・2FA・collaborator）。
+🔴 **`marketplace add` で落ちたら、`gh auth login` を勧める前に切り分ける**（SSH 鍵か、つづりの間違い。招待は要らない）。
 対処は `${CLAUDE_PLUGIN_ROOT}/skills/setup/troubleshooting.md` の「プラグイン」。
 
 ### 1-2｜ルールを入れる（`hicard プラグイン` が ✅ になった直後・**省略しない**）

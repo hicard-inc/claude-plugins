@@ -8,7 +8,7 @@
 ## 0. まず：ここに入れてはいけないもの
 
 plugin のインストールは **`git clone`**。**この中身はインストールした全員のマシンに落ちる。**
-private だからといって以下は入れない。**一度コミットすると履歴から消せない。**
+**public リポジトリ**（2026-09-05 から）なので、インストールしなくても誰でも読める。以下は入れない。**一度コミットすると履歴から消せない。**
 
 | 入れない | 例 |
 |---|---|
@@ -79,12 +79,13 @@ private だからといって以下は入れない。**一度コミットする�
 claude plugin details hicard    # 常時コストと、スキルごとの呼び出し時コストが出る
 ```
 
-現状の実測（**0.1.11**・2026-09-05）。**常時 ~314 トークン**、呼び出し時は
-**setup ~5k** / slides ~4.6k / research ~2.9k / tasks ~2.1k ＝合計 ~14.6k。
+現状の実測（**0.1.15**・2026-09-05）。**常時 ~322 トークン**、呼び出し時は
+**setup ~4.6k** / slides ~4.6k / research ~2.9k / tasks ~2.1k ＝合計 ~14.2k。
 全体の上限 25,000 は超えていない。
 
-🔴 **setup は上限 5,000 に到達した。**表示が 0.1.10 の 4.9k から **0.1.11 で ~5k に上がった。**
-**もう `SKILL.md` には足せない。**次に1行足したら上限を超える。
+🔴 **setup は 0.1.11〜0.1.14 で上限 5,000 に到達していた**（表示 ~5k・6,645 字）。
+[#18](https://github.com/hicard-inc/claude-plugins/pull/18) でドライブの合否判定を `google_drive.md` へ出し、
+重複していた手順を削って **6,179 字・~4.6k に戻した。**余裕は ~400 トークン（≒500 字）。**次に足すときも参照資料へ。**
 経緯: 0.1.1 で 4.4k → 追記を重ねて 0.1.6 で **5.3k と上限を超えていた**（測るまで誰も気づいていない）。
 [#6](https://github.com/hicard-inc/claude-plugins/pull/6) で参照資料（`google_drive.md`）を
 切り出して 4.9k に戻し、0.1.7〜0.1.10 は**参照資料側だけを増やして 4.9k を維持していた。**
@@ -92,7 +93,7 @@ claude plugin details hicard    # 常時コストと、スキルごとの呼び�
 
 🔴 **文字数からトークンを見積もれる。**git 履歴の文字数と実測値を突き合わせると
 **1文字 ≒ 0.74 トークン**（0.1.1=5,912字/4.4k、0.1.6=7,119字/5.3k、0.1.7=6,635字/4.9k、
-0.1.8〜0.1.10=6,544字/4.9k、0.1.11=6,645字/~5k）。
+0.1.8〜0.1.10=6,544字/4.9k、0.1.11〜0.1.14=6,645字/~5k、0.1.15=6,179字/4.6k）。
 **`SKILL.md` が 6,700 字を超えたら 5,000 トークンを超える。**測る前にこれで当たりをつける。
 
 🔴 **表示は 0.1k 刻みで丸められる。**0.1.8 で `SKILL.md` を 91 文字削ったが表示は 4.9k のまま動かなかった。
@@ -262,7 +263,7 @@ git config core.hooksPath hooks
 
 ---
 
-## 7. このリポジトリへの書き込み権限（2026-09-04 追加）
+## 7. このリポジトリの権限（2026-09-04 追加・2026-09-05 public 化で改訂）
 
 **plugin のインストールは `git clone` で、更新は再 clone。**
 つまり **ここに push できる人は、全メンバーの Claude に任意の Skill と MCP 設定を配れる。**
@@ -270,22 +271,20 @@ git config core.hooksPath hooks
 
 | | 決めごと |
 |---|---|
-| **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み） |
-| **配布先のメンバー** | **Outside collaborator の `pull`（read）だけ渡す。**push は付けない |
-| **Org Member にしない** | Member は Org の**全リポジトリが見える**。クライアントワークが含まれるため |
-| **clone したら1回** | `git config core.hooksPath hooks`。**忘れるとこのリポジトリのガードは全部無効になる**（GitHub Free ではサーバー側の branch protection が使えないので、hook が唯一の担保） |
+| **読む（clone・インストール）** | **public。**誰でも読める。**新メンバーに招待は要らない**（要るのは GitHub アカウントと SSH 鍵だけ。`marketplace add` は SSH で clone する） |
+| **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み）。**collaborator も Org Member も足さない** |
+| **`main` の保護（GitHub 側）** | **PR 必須・直接 push 禁止・force push 禁止・削除禁止・管理者にも適用**（`enforce_admins`）。2026-09-05 に設定し、API の GET で確認済み。**Owner でも `main` へは PR を経ないと入らない** |
+| **clone したら1回** | `git config core.hooksPath hooks`。push 前に手元で**版の食い違いと鍵の混入**を見る。**この2つは GitHub 側の保護では止まらない**ので、hook は保護の代わりではなく二重目 |
+| **public に切り替えた理由** | private では Org Free の制約で branch protection が使えず（403）、新メンバーごとに outside collaborator の招待が要り、**招待前は誰も clone できなかった**。中身は最初から「全員のマシンに落ちる前提」で書いているので、公開範囲が広がっても入れてよいものの基準（0章）は変わらない |
 
-read 権限を渡すコマンド（Owner が実行する）：
+**なぜ private に戻さないか**: 戻すと保護が外れて招待が復活する。**戻す判断は Owner 4名で**。
+
+保護の現状を見るコマンド（Owner が実行する）：
 
 ```bash
-# 現在の権限を見る
-gh api repos/hicard-inc/claude-plugins/collaborators --jq '.[] | "\(.login)\t\(.role_name)"'
-
-# read だけ渡す（招待が飛ぶ。本人が承諾するまで有効にならない）
-gh api -X PUT repos/hicard-inc/claude-plugins/collaborators/<username> -f permission=pull
-
-# 承諾待ちの招待を見る
-gh api repos/hicard-inc/claude-plugins/invitations --jq '.[] | "\(.invitee.login)\t\(.permissions)"'
+gh api repos/hicard-inc/claude-plugins --jq '"private=\(.private) delete_branch_on_merge=\(.delete_branch_on_merge)"'
+gh api repos/hicard-inc/claude-plugins/branches/main/protection \
+  --jq '"pr_required=\(.required_pull_request_reviews != null) enforce_admins=\(.enforce_admins.enabled) force_push=\(.allow_force_pushes.enabled) deletions=\(.allow_deletions.enabled)"'
 ```
 
-> **`permission=pull` を省くと既定は `push` になる。**必ず明示する。
+期待値: `private=false delete_branch_on_merge=true` / `pr_required=true enforce_admins=true force_push=false deletions=false`。

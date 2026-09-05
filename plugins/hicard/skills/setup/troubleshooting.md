@@ -28,8 +28,7 @@
 | **Claude が秘密鍵（`.env` / `google_credentials.json`）を要求してくる** | 鍵を全員に配っていた頃のルールで動いている | プラグインを更新して再起動する。**鍵は要らない**（→ `access_model.md`） |
 | **`marketplace add` が `Permission denied (publickey)`** | 🔴 **`marketplace add` は SSH で clone する**（`git@github.com:...`・2026-09-05 実測）。**`gh auth login` は https なので効かない** | GitHub に SSH 鍵を登録する（`ssh-keygen -t ed25519` → `gh ssh-key add ~/.ssh/id_ed25519.pub`）。**`ssh -T git@github.com` が名前を返すまで確認する** |
 | **`gh` は通っているのに 403 が出る**（`gh repo view` 等） | 🔴 **hicard-inc は「セキュアな2FA必須」で SMS は不可。**SMS だけの人は Org のリポジトリに一切触れない（2026-09-05 実測） | **本人が GitHub の2段階認証を認証アプリかパスキーに変える。**設定 → Password and authentication。**管理者側では直せない** |
-| `Repository not found` | まだ collaborator に入っていない | 管理者へ「`claude-plugins` に入れてください」 |
-| `marketplace add` が権限エラーになる（上のどれでもない） | private リポジトリへの git 認証が通っていない | `gh auth login` を実行するか、GitHub の認証情報を git に登録する |
+| `Repository not found` | **つづりの間違い**（このリポジトリは public なので、権限が無くて出ることはない） | `hicard-inc/claude-plugins` を打ち直す |
 | **`~/.claude/settings.json` を触られたくない** | 既定は user スコープ | **local スコープでよい。**そのプロジェクトの `.claude/settings.local.json` に入るだけで、機能は同じ（2026-09-05 実測） |
 
 🔴 **更新だけでは直らない。閉じて開き直すまでが一組。**

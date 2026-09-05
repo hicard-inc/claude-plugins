@@ -94,8 +94,11 @@ want = ["Bash(rm:*)",
         "Read(~/**/*.env)",
         "Write(**/.env*)",
         "Write(~/**/.env*)",
+        "Read(**/.ssh/**)",
         "Read(~/**/.ssh/**)",
+        "Read(**/secrets/**)",
         "Read(~/**/secrets/**)",
+        "Read(**/*credential*)",
         "Read(~/**/*credential*)"]
 p = sys.argv[1]
 if not os.path.exists(p):

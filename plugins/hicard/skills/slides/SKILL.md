@@ -83,7 +83,12 @@ Google Docs の入れ子リストを貼られることが多い（画像で来�
 - **比喩を使わない。円数字を使わない**（ターミナルで豆腐になる）
 - **句点を太字の外に出す**。`**〜。**次` は閉じない。`**〜**。次` と書く
 
-書き終えたら機械で1つ通す：
+書き終えたら機械で1つ通す。
+
+🔴 **その前に Node.js があるか見る**（`node --version` と `npm --version` の両方）。
+**無ければ先に入れる**（`brew install node`、または https://nodejs.org の LTS）。
+`check_setup.sh` は Node を【任意】と出すが、それは **`/setup` に要らない**という意味で、
+**`/slides` には必須**。無いまま進めると `node: command not found` で止まる（2026-09-05 実測）。
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/skills/slides/scripts/check_bold.js" docs/slides/<なまえ>.md
@@ -168,6 +173,7 @@ npx playwright install chromium   # 描画用のブラウザ本体
 ```
 
 `Chromium が見つかりません` と出たら、これを実行していない。別の場所に入れている場合は `PLAYWRIGHT_CHROMIUM_PATH` に実体のパスを入れる。
+**このときスクリプトは案内文を出してそこで終わる**（生のエラーは出さない。中身を見たいときだけ `DECK_SHOT_DEBUG=1` を付ける）。
 
 **1440×810（16:9）で、`.slide` を1枚ずつ撮る**。プロジェクタと同じ比率。
 

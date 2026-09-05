@@ -54,9 +54,11 @@ def main() -> int:
         print(f"OK  コピー  {dst} （symlink が張れなかった: {e}）")
         print("    このやり方だと自動では更新されない。更新のたびに /setup を打ち直す。")
 
-    print("    次回の起動から読み込まれる。/context の Memory files を見て確かめる。")
-    print("    symlink なら 'hicard-plugins/RULES.md'、コピーなら 'rules/hicard.md' の行が出れば合格。")
-    print("    （/context は symlink を解決した先を表示するので 'hicard.md' では出ない）")
+    print("    次回の起動から読み込まれる。確かめ方は2つ:")
+    print(f"      1) ls -l {dst} && head -1 {dst}")
+    print("         -> リンク先のパスと '# hicard で Claude を使うときのルール' が返れば合格")
+    print("      2) 再起動後の自分の指示にルール本文が入っていること（1行引用して見せる）")
+    print("    /context は Claude 自身では実行できない（スラッシュコマンド）。1) 2) で判定する。")
     return 0
 
 

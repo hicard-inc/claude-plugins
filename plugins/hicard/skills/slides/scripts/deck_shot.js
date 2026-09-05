@@ -23,8 +23,13 @@ const fs = require('fs');
   try {
     browser = await chromium.launch(exe ? { executablePath: exe } : {});
   } catch (e) {
+    // 🔴 ここで throw すると Node が生の Playwright スタックを出し、
+    //    読む人は案内文ではなくスタックを読んでしまう（2026-09-05 パイロットで実測）。
+    //    案内文を出して、その場で終わる。
     console.error(findChromium.hint);
-    throw e;
+    console.error('（詳細を見たいときは DECK_SHOT_DEBUG=1 を付けて実行）');
+    if (process.env.DECK_SHOT_DEBUG) console.error(e);
+    process.exit(1);
   }
   // 1440x810 = 16:9。プロジェクタと同じ比率で見る
   const page = await browser.newPage({

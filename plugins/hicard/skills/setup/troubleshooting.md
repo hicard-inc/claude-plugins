@@ -32,8 +32,8 @@
 | **`~/.claude/settings.json` を触られたくない** | 既定は user スコープ | **local スコープでよい。**そのプロジェクトの `.claude/settings.local.json` に入るだけで、機能は同じ（2026-09-05 実測） |
 
 🔴 **更新だけでは直らない。閉じて開き直すまでが一組。**
-古いまま使うと、Claude は古いルールで動く。**本人にも Claude にも「古い」と気づく手立てが無い**（画面には何も出ない）。
-**更新は自動で届く**（`/setup` 1-3 で貼る設定に `autoUpdate` が入っている・反映は次の起動）。`check_setup.sh` の「自動更新」が ❌ の人だけ、
+古いまま使うと、Claude は古いルールで動く。**本人にも Claude にも「古い」と気づく手立てが無い**（更新が入った瞬間に右下へ数秒出る「Plugin updated: hicard」を見逃すと、あとは何も出ない）。
+**更新は自動で届く**（`/setup` 1-3 で貼る設定に `autoUpdate` が入っている。届くのは最初の指示を送ってから 10 分以内・反映は次の起動。2026-09-05 実測）。`check_setup.sh` の「自動更新」が ❌ の人だけ、
 月に1回ターミナルで `claude plugin marketplace update hicard-plugins` → `claude plugin update hicard@hicard-plugins`。
 
 ### 🔴 `/plugin` を開かせない（2026-09-04 実測）

@@ -47,13 +47,16 @@ clone しようとし、SSH 鍵の無い人は止まる（2026-09-05 実測・�
 
 `/setup` の 1-3 で貼る設定（[deny.json](plugins/hicard/skills/setup/deny.json)）に
 **`extraKnownMarketplaces.hicard-plugins.autoUpdate: true`** が入っている（0.1.17 から）。
-Claude Code は起動後に配布元を背景で取り直し、**次に `claude` を立ち上げたときに新しい版が入る。**
+Claude Code を開いて**最初の指示を送ると、そこから 0〜10 分の間に**配布元を背景で取り直し、新しい版を入れる。
+入った瞬間だけ、画面右下に「Plugin updated: hicard · Run /reload-plugins to apply」が数秒出る。
+**反映は次に `claude` を立ち上げたとき**（ルール本文 `RULES.md` だけは取り直した瞬間から新しい）。
 
 🔴 **この marketplace は「第三者」扱いなので、既定では自動更新が切れている**（公式ドキュメント:
 Third-party and local development marketplaces have auto-update disabled by default）。
 **設定を貼っていない人には届かない。**`check_setup.sh` の「自動更新」行が ❌ ならそれ。
 貼って起動すると `~/.claude/plugins/known_marketplaces.json` に `autoUpdate: true` が写る（2026-09-05 実測）。
-⚠️ **新しい版が実際に自動で届くところは 0.1.17 の配布で確かめる**（この時点では未実測）。
+✅ **新しい版が実際に自動で届くことを実測**（2026-09-05・0.1.18: 20:02 にマージ → 20:03 に最初の指示 → 20:08 に 0.1.18 が入った。手動 update なし）。
+⚠️ **届かない使い方**: `claude -p` の非対話だけで使う（最初の指示の送信が起きない）、Claude Code 本体の自動更新を切っている（`DISABLE_AUTOUPDATER` など。plugin の更新も一緒に止まる）。
 
 **今すぐ欲しいとき・自動更新を入れていないとき**は、**ターミナルで**（Claude Code を閉じてから）：
 

@@ -96,7 +96,7 @@ cat "${CLAUDE_PLUGIN_ROOT}/skills/setup/deny.json"
 | 行 | 何をするか | 根拠 |
 |---|---|---|
 | `permissions.disableBypassPermissionsMode: "disable"` | **bypass モード（`--dangerously-skip-permissions`・Shift+Tab の bypass）に入れなくする。**bypass は deny 以外の確認と安全チェックを全部飛ばし、`.git` や `.claude` への書き込みも通す（公式）。**deny 自体は bypass 中も効く**（公式: Deny rules block in every mode, including bypassPermissions） | 公式（settings-reference）: 「works from any scope. A user can set it in their own settings to lock themselves out of bypass mode」。**実測（2026-09-05・2.1.261）**: `claude --dangerously-skip-permissions` で起動しても、エラーも承諾画面も出ず、**画面下が `auto mode on` のまま普通に開く**。フラグは黙って無視される |
-| `extraKnownMarketplaces.hicard-plugins.autoUpdate: true` | **新しい版を自動で取り込む。**この marketplace は第三者扱いで**既定では切れている**（公式） | 貼って起動すると `~/.claude/plugins/known_marketplaces.json` に `autoUpdate: true` が写る（2026-09-05 実測・ログイン前でも写る）。**新しい版が実際に自動で届くところは 0.1.17 で確かめる** |
+| `extraKnownMarketplaces.hicard-plugins.autoUpdate: true` | **新しい版を自動で取り込む。**この marketplace は第三者扱いで**既定では切れている**（公式） | 貼って起動すると `~/.claude/plugins/known_marketplaces.json` に `autoUpdate: true` が写る（2026-09-05 実測・ログイン前でも写る）。**実測（2026-09-05・0.1.18）: 手動 update なしで、最初の指示を送ってから 5 分後に新版が入った。**走るのは対話セッションで最初の指示を送ってから 0〜10 分後。`-p` だけの使い方や、本体の自動更新を切った環境（`DISABLE_AUTOUPDATER`）では走らない |
 
 `extraKnownMarketplaces.hicard-plugins` は `marketplace add` が既に書いている。**中の `source` は同じなので、丸ごと置き換えてよい**（`autoUpdate` の1行が増えるだけ）。
 

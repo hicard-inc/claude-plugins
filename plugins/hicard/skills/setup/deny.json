@@ -1,5 +1,6 @@
 {
   "permissions": {
+    "disableBypassPermissionsMode": "disable",
     "deny": [
       "Bash(rm:*)",
       "Bash(sudo:*)",
@@ -19,5 +20,14 @@
       "Read(**/*credential*)",
       "Read(~/**/*credential*)"
     ]
+  },
+  "extraKnownMarketplaces": {
+    "hicard-plugins": {
+      "source": {
+        "source": "github",
+        "repo": "hicard-inc/claude-plugins"
+      },
+      "autoUpdate": true
+    }
   }
 }

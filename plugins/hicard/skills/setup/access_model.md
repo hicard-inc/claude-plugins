@@ -89,7 +89,16 @@ cat "${CLAUDE_PLUGIN_ROOT}/skills/setup/deny.json"
 
 `~/.claude/settings.json` が**無ければ**この中身で新規作成する。**あれば** `deny` の中身だけを足す
 （**既にある行を消さない。**JSON なので、足すときは前の行の末尾にカンマが要る）。
-**17 件**ある。`check_setup.sh` も同じファイルを読んで突合するので、件数が合わなければそこで分かる。
+`deny` は **17 件**。`check_setup.sh` も同じファイルを読んで突合するので、件数が合わなければそこで分かる。
+
+🔴 **同じファイルに `deny` 以外が2つ入っている（0.1.17 から）。消さずに一緒に貼る。**`check_setup.sh` はこの2つも見る。
+
+| 行 | 何をするか | 根拠 |
+|---|---|---|
+| `permissions.disableBypassPermissionsMode: "disable"` | **bypass モード（`--dangerously-skip-permissions`・Shift+Tab の bypass）に入れなくする。**bypass は deny 以外の確認と安全チェックを全部飛ばし、`.git` や `.claude` への書き込みも通す（公式）。**deny 自体は bypass 中も効く**（公式: Deny rules block in every mode, including bypassPermissions） | 公式（settings-reference）: 「works from any scope. A user can set it in their own settings to lock themselves out of bypass mode」。⚠️ 起動が実際に止まるところは**未実測**（管理者の環境では試験そのものが分類器に止められた） |
+| `extraKnownMarketplaces.hicard-plugins.autoUpdate: true` | **新しい版を自動で取り込む。**この marketplace は第三者扱いで**既定では切れている**（公式） | 貼って起動すると `~/.claude/plugins/known_marketplaces.json` に `autoUpdate: true` が写る（2026-09-05 実測・ログイン前でも写る）。**新しい版が実際に自動で届くところは 0.1.17 で確かめる** |
+
+`extraKnownMarketplaces.hicard-plugins` は `marketplace add` が既に書いている。**中の `source` は同じなので、丸ごと置き換えてよい**（`autoUpdate` の1行が増えるだけ）。
 
 🔴 **`allow` は1行も書かない。**allow は**守りを増やさない**（止めるものを減らす方向にしか働かない）。
 **理由はこれだけで足りる。deny だけにする。**
@@ -142,6 +151,8 @@ cat "${CLAUDE_PLUGIN_ROOT}/skills/setup/deny.json"
 ### 入れたら、1回わざと止める（**省略しない**）
 
 **書いただけでは効いているか分からない。**貼った直後に、本人の前でこの3つを試す。
+（bypass 禁止は、本人にターミナルで `claude --dangerously-skip-permissions` と打ってもらい、**出た表示をそのまま管理者に伝える。**
+何が出るかは未実測。bypass の承諾画面は**初回だけ出る仕様**なので、それが出るか出ないかを判定に使わない。）
 
 **先に、試す材料を本人にターミナルで作ってもらう**（🔴 **Claude は `.env*` を作れない。**
 `Read(...)` の deny は**同じパスへの書き込み・新規作成も止める**仕様。以前ここに「deny とは別の層」と

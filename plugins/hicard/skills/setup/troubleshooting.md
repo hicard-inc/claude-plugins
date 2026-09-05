@@ -20,20 +20,21 @@
 
 | 症状 | 原因 | 対処 |
 |---|---|---|
-| **Claude が `/setup` を知らない** | プラグインが未導入 | ターミナルで `claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins` → **`claude` で立ち上げ直す** |
+| **Claude が `/setup` を知らない** | プラグインが未導入 | ターミナルで `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 claude plugin marketplace add hicard-inc/claude-plugins` → `claude plugin install hicard@hicard-plugins` → **`claude` で立ち上げ直す** |
 | **Claude の言うことが手順書と違う** | プラグインが古い | ターミナルで `claude plugin update hicard@hicard-plugins` → **`claude` で立ち上げ直す** |
 | 更新したのに変わらない | **動いているセッションは古いままで走り続ける** | `/exit` → `claude`。**更新と再起動までが一組**。`/reload-plugins` でも差し替わる |
 | **`/plugin update ...` と打ったら一覧が開いただけ** | 🔴 **`/plugin` は引数を取らない**（2.1.260 実測）。VSCode 拡張では `/plugin` 自体が使えない | **ターミナルで `claude plugin update hicard@hicard-plugins`。開いた一覧はそのまま閉じる**（下の🔴を読む） |
 | **知らない Skill が増えている・常時トークンが増えた** | 🔴 **`/plugin` の一覧で Enter を押してインストールしてしまった**（2026-09-04 実測） | `claude plugin list` で確認し、`claude plugin uninstall <plugin>@<marketplace>` で外す |
 | **Claude が秘密鍵（`.env` / `google_credentials.json`）を要求してくる** | 鍵を全員に配っていた頃のルールで動いている | プラグインを更新して再起動する。**鍵は要らない**（→ `access_model.md`） |
-| **`marketplace add` が `Permission denied (publickey)`** | 🔴 **`marketplace add` は SSH で clone する**（`git@github.com:...`・2026-09-05 実測）。**`gh auth login` は https なので効かない** | GitHub に SSH 鍵を登録する（`ssh-keygen -t ed25519` → `gh ssh-key add ~/.ssh/id_ed25519.pub`）。**`ssh -T git@github.com` が名前を返すまで確認する** |
+| **`marketplace add` が `Permission denied (publickey)`** | 🔴 **先頭の `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` を付けずに打った。**既定は SSH clone（`git@github.com:...`・2026-09-05 実測）。**`gh auth login` は https なので関係ない** | `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 claude plugin marketplace add hicard-inc/claude-plugins` で打ち直す。**SSH 鍵は作らせない**（public なので鍵もアカウントも要らない） |
 | **`gh` は通っているのに 403 が出る**（`gh repo view` 等） | 🔴 **hicard-inc は「セキュアな2FA必須」で SMS は不可。**SMS だけの人は Org のリポジトリに一切触れない（2026-09-05 実測） | **本人が GitHub の2段階認証を認証アプリかパスキーに変える。**設定 → Password and authentication。**管理者側では直せない** |
 | `Repository not found` | **つづりの間違い**（このリポジトリは public なので、権限が無くて出ることはない） | `hicard-inc/claude-plugins` を打ち直す |
 | **`~/.claude/settings.json` を触られたくない** | 既定は user スコープ | **local スコープでよい。**そのプロジェクトの `.claude/settings.local.json` に入るだけで、機能は同じ（2026-09-05 実測） |
 
 🔴 **更新だけでは直らない。閉じて開き直すまでが一組。**
 古いまま使うと、Claude は古いルールで動く。**本人にも Claude にも「古い」と気づく手立てが無い**（画面には何も出ない）。
-**月に1回は、ターミナルで `claude plugin update hicard@hicard-plugins` を実行する。**
+**更新は自動で届く**（`/setup` 1-3 で貼る設定に `autoUpdate` が入っている・反映は次の起動）。`check_setup.sh` の「自動更新」が ❌ の人だけ、
+月に1回ターミナルで `claude plugin marketplace update hicard-plugins` → `claude plugin update hicard@hicard-plugins`。
 
 ### 🔴 `/plugin` を開かせない（2026-09-04 実測）
 

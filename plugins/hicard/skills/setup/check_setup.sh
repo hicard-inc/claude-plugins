@@ -65,7 +65,7 @@ if [ -f "$PLUGIN_ROOT/.claude-plugin/plugin.json" ]; then
         "$PLUGIN_ROOT/.claude-plugin/plugin.json" 2>/dev/null || echo "?")
   check "hicard プラグイン" "ok" "v$VER"
 else
-  check "hicard プラグイン" "ng" "ターミナルで claude plugin marketplace add hicard-inc/claude-plugins → claude plugin install hicard@hicard-plugins"
+  check "hicard プラグイン" "ng" "ターミナルで CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1 claude plugin marketplace add hicard-inc/claude-plugins → claude plugin install hicard@hicard-plugins"
 fi
 
 # ── git の名乗り ─────────────────────────────────────────────
@@ -82,40 +82,60 @@ fi
 # ── 許可設定（deny）──────────────────────────────────────────
 # 🔴 読むだけ。このスクリプトは settings.json を書き換えない（Claude はそもそも書けない）。
 #    中身の作り方と「わざと1回止める」手順は skills/setup/access_model.md の 4。
-DENY_JSON="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/deny.json"   # 推奨 deny の正本（access_model.md もこれを指す）
-DENY_LINE=$(python3 - "$HOME/.claude/settings.json" "$DENY_JSON" <<'PYEOF' 2>/dev/null
+DENY_JSON="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/deny.json"   # 推奨設定の正本（deny・bypass 禁止・自動更新。access_model.md もこれを指す）
+SETTINGS_LINES=$(python3 - "$HOME/.claude/settings.json" "$DENY_JSON" <<'PYEOF' 2>/dev/null
 import json, os, sys
+def ng_all(msg):
+    for k in ("deny", "bypass", "update"):
+        print("%s\tng\t%s" % (k, msg))
+    raise SystemExit
 try:
     want = json.load(open(sys.argv[2], encoding="utf-8"))["permissions"]["deny"]
 except Exception as e:
-    print("ng\tdeny.json（推奨一覧の正本）が読めない（%s）" % type(e).__name__)
-    raise SystemExit
+    ng_all("deny.json（推奨設定の正本）が読めない（%s）" % type(e).__name__)
 p = sys.argv[1]
 if not os.path.exists(p):
-    print("ng\t~/.claude/settings.json が無い")
-    raise SystemExit
+    ng_all("~/.claude/settings.json が無い")
 try:
-    deny = (json.load(open(p, encoding="utf-8")).get("permissions") or {}).get("deny") or []
+    s = json.load(open(p, encoding="utf-8"))
 except Exception as e:
-    print("ng\tJSON として壊れている（%s）。直すまで deny は1件も効かない" % type(e).__name__)
-    raise SystemExit
+    ng_all("JSON として壊れている（%s）。直すまで1件も効かない" % type(e).__name__)
+perms = s.get("permissions") or {}
+deny = perms.get("deny") or []
 missing = [w for w in want if w not in deny]
 if len(missing) == len(want):
-    print("ng\tdeny が1件も入っていない")
+    print("deny\tng\tdeny が1件も入っていない")
 elif missing:
-    print("warn\t足りない %d 件: %s" % (len(missing), " ".join(missing)))
+    print("deny\twarn\t足りない %d 件: %s" % (len(missing), " ".join(missing)))
 else:
-    print("ok\tdeny %d 件（推奨 %d 件すべて）" % (len(deny), len(want)))
+    print("deny\tok\tdeny %d 件（推奨 %d 件すべて）" % (len(deny), len(want)))
+# bypass 禁止: --dangerously-skip-permissions と Shift+Tab の bypass を封じる（user 設定でも効く・公式）
+if perms.get("disableBypassPermissionsMode") == "disable":
+    print("bypass\tok\tdisableBypassPermissionsMode: disable")
+else:
+    print("bypass\tng\tpermissions.disableBypassPermissionsMode が無い")
+# 自動更新: 第三者 marketplace は既定で切れている（公式）。無いと新しい版が届かない
+mk = (s.get("extraKnownMarketplaces") or {}).get("hicard-plugins") or {}
+if mk.get("autoUpdate") is True:
+    print("update\tok\tautoUpdate: true（新しい版は次の起動で入る）")
+else:
+    print("update\tng\textraKnownMarketplaces.hicard-plugins.autoUpdate が無い（新しい版が届かない）")
 PYEOF
 )
-[ -z "$DENY_LINE" ] && DENY_LINE=$'ng\t判定できなかった（python3 が無い）'
-DENY_ST=${DENY_LINE%%$'\t'*}
-DENY_MSG=${DENY_LINE#*$'\t'}
-case "$DENY_ST" in
-  ok)   check "許可設定（deny）" "ok"  "$DENY_MSG" ;;
-  warn) warn  "許可設定（deny）"       "$DENY_MSG" ;;
-  *)    check "許可設定（deny）" "ng"  "$DENY_MSG → access_model.md の 4 を本人の手で貼る" ;;
-esac
+[ -z "$SETTINGS_LINES" ] && SETTINGS_LINES=$'deny\tng\t判定できなかった（python3 が無い）'
+while IFS=$'\t' read -r KEY ST MSG; do
+  [ -z "$KEY" ] && continue
+  case "$KEY" in
+    bypass) LABEL="bypass 禁止" ;;
+    update) LABEL="自動更新" ;;
+    *)      LABEL="許可設定（deny）" ;;
+  esac
+  case "$ST" in
+    ok)   check "$LABEL" "ok"  "$MSG" ;;
+    warn) warn  "$LABEL"       "$MSG" ;;
+    *)    check "$LABEL" "ng"  "$MSG → access_model.md の 4 を本人の手で貼る" ;;
+  esac
+done <<< "$SETTINGS_LINES"
 
 echo ""
 echo "【/setup には要らないが、/slides には必須】"

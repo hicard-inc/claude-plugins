@@ -1,8 +1,8 @@
 # hicard で Claude を使うときのルール
 
 **これは読み物ではなく、Claude が毎回読む指示書。**`/setup` が `~/.claude/rules/hicard.md` に置くので、
-**あなたが何かを貼る必要はない。**中身が更新されたら、ターミナルで
-`claude plugin marketplace update hicard-plugins` を実行すれば最新になる。
+**あなたが何かを貼る必要はない。**中身が更新されたら**自動で届く**（`/setup` で入れる自動更新）。
+反映は次に `claude` を立ち上げたとき。すぐ欲しければターミナルで `claude plugin marketplace update hicard-plugins`。
 
 <!-- 🔴 このファイルに固有名詞を書かない。クライアント名・個人名・具体的なファイルパス・
      DB名・シート名・金額は入れない。理由は CONTRIBUTING.md の 0 を読むこと。 -->

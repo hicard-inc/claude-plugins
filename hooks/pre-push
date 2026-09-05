@@ -1,5 +1,5 @@
 #!/bin/bash
-# push する前に (0) 版の食い違いを見て (1) main への直接 push を止め (2) 中身に鍵が無いか見る。
+# push する前に (0) 版の食い違いと plugin 定義を見て (1) main への直接 push を止め (2) 中身に鍵が無いか見る。
 # 一時的に飛ばす: git push --no-verify
 #
 # 有効化: git config core.hooksPath hooks
@@ -17,6 +17,14 @@ FAILED=0
 # plugin を配るリポジトリだけが対象（marketplace.json が無ければ何もしない）
 if [ -f "$VERSION_CHECKER" ]; then
   if ! python3 "$VERSION_CHECKER" --quiet; then FAILED=1; fi
+fi
+# 公式の validate --strict（claude が入っているマシンだけ。無ければ Actions 側で同じものが走る）
+if [ -f "$REPO_DIR/.claude-plugin/marketplace.json" ] && command -v claude >/dev/null 2>&1; then
+  for T in "$REPO_DIR" "$REPO_DIR"/plugins/*/; do
+    if ! claude plugin validate --strict "$T" >/dev/null 2>&1; then
+      echo "✗ claude plugin validate --strict が落ちました: $T"; claude plugin validate --strict "$T" 2>&1 | tail -5; FAILED=1
+    fi
+  done
 fi
 
 # 既定ブランチ名を remote から引く（main / master どちらでも動く）

@@ -8,10 +8,10 @@
       "name": "hicard",
       "source": "./plugins/hicard",
       "displayName": "hicard",
-      "description": "hicard メンバー共通の Skill と MCP 設定（セットアップ・調査・スライド・タスク確認）",
+      "description": "hicard メンバー共通の Skill と MCP 設定（セットアップ・調査・スライド・タスク確認・タスク起票）",
       "category": "productivity",
       "author": { "name": "hicard" },
-      "version": "0.1.19"
+      "version": "0.1.20"
     }
   ]
 }

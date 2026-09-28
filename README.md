@@ -104,6 +104,7 @@ claude plugin uninstall <plugin>@<marketplace>
 | `research` | 調査を始める前・レポートを出す前に踏む手順 | `/research` ／ Claude の自己判断でも起動する |
 | `slides` | 登壇・社内共有のスライドを1本作る手順 | `/slides`（**人が呼ぶだけ**） |
 | `tasks` | Notion `[PJ] Tasks` の状況を見る | `/tasks` ／ Claude の自己判断でも起動する |
+| `task-add` | Notion `[PJ] Tasks` にタスクを起票する（必須5項目が揃うまで質問し、書く前に必ず確認を取る） | `/task-add` ／ Claude の自己判断でも起動する |
 
 配っている MCP サーバー（[plugins/hicard/.mcp.json](plugins/hicard/.mcp.json)）:
 

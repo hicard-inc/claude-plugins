@@ -103,7 +103,7 @@ claude plugin uninstall <plugin>@<marketplace>
 | `setup` | hicard の Claude を使えるようにする（Notion をつなぎ、ドライブのコネクタを確かめる） | `/setup`（**人が呼ぶだけ**） |
 | `research` | 調査を始める前・レポートを出す前に踏む手順 | `/research` ／ Claude の自己判断でも起動する |
 | `slides` | 登壇・社内共有のスライドを1本作る手順 | `/slides`（**人が呼ぶだけ**） |
-| `tasks` | Notion `[PJ] Tasks` の状況を見る | `/tasks` ／ Claude の自己判断でも起動する |
+| `tasks` | Notion `[PJ] Tasks` の未完了タスクをメンバー別に見る（`/tasks 名前`・`/tasks 自分`・`/tasks 全員`。空欄なら誰のタスクか質問する） | `/tasks` ／ Claude の自己判断でも起動する |
 | `task-add` | Notion `[PJ] Tasks` にタスクを起票する（必須5項目が揃うまで質問し、書く前に必ず確認を取る） | `/task-add` ／ Claude の自己判断でも起動する |
 
 配っている MCP サーバー（[plugins/hicard/.mcp.json](plugins/hicard/.mcp.json)）:

@@ -105,6 +105,7 @@ claude plugin uninstall <plugin>@<marketplace>
 | `slides` | 登壇・社内共有のスライドを1本作る手順 | `/slides`（**人が呼ぶだけ**） |
 | `tasks` | Notion `[PJ] Tasks` の未完了タスクをメンバー別に見る（`/tasks 名前`・`/tasks 自分`・`/tasks 全員`。空欄なら誰のタスクか質問する） | `/tasks` ／ Claude の自己判断でも起動する |
 | `task-add` | Notion `[PJ] Tasks` にタスクを起票する（必須5項目が揃うまで質問し、書く前に必ず確認を取る） | `/task-add` ／ Claude の自己判断でも起動する |
+| `claude-usage` | 自分の Claude Code の週次使用量を集計し、確認のうえ Notion `[TMP] ClaudeUsage` に自分の行を書く。使用率の記録（statusline への差し込み）は本人が同意したときだけ入れる（`/claude-usage 記録を始める`・`記録を止める`・`状態`） | `/claude-usage`（**人が呼ぶだけ**） |
 
 配っている MCP サーバー（[plugins/hicard/.mcp.json](plugins/hicard/.mcp.json)）:
 

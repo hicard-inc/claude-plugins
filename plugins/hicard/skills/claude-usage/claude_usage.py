@@ -17,9 +17,10 @@ import glob
 import json
 import os
 
-VERSION = "0.1.0"
+VERSION = "0.1.1"
 JST = dt.timezone(dt.timedelta(hours=9))
-PLANS = {"Pro": 1, "Max 5x": 5, "Max 20x": 20}
+# Team は Notion の Pro換算の数式に倍率が無く 0 になる（Team は判定に使わない）
+PLANS = {"Pro": 1, "Max 5x": 5, "Max 20x": 20, "Team": 0}
 
 # API 標準単価（USD / 100万トークン）。2026-10-19 に claude-api Skill（2026-10-06 時点のキャッシュ）で確認。
 # (入力, 出力, キャッシュ読み込み)。キャッシュ書き込みは 5分=入力×1.25・1時間=入力×2。
@@ -186,10 +187,12 @@ def main():
         notes.append("statusline の使用率記録が無い週（使用率・5時間枠の列は空欄）")
     elif rl["obs_days"] < 3:
         notes.append("観測日数が3日未満（判定から外す週）")
+    if args.plan == "Team":
+        notes.append("Team プランの行は判定に使わない（Pro換算は0になる）")
     if unknown:
         notes.append("単価未登録のモデルあり（API換算額に含めていない）: " + ", ".join(sorted(unknown)))
 
-    info = f"集計 {now.astimezone(JST):%Y-%m-%d %H:%M} JST / claude_usage.py v{VERSION}"
+    info = f"集計 {now.astimezone(JST):%Y-%m-%d %H:%M} JST / claude_usage v{VERSION}"  # 「.py」を付けると Notion が usage.py をリンクに変える
     if rl:
         info += f" / 週次サイクル数 {rl['weekly_cycles']}・使用率記録 {rl['records']}件"
     if notes:

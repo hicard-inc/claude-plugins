@@ -41,8 +41,9 @@ python3 "${CLAUDE_PLUGIN_ROOT}/skills/claude-usage/claude_usage.py" [--week-star
 
 ### A2. プランを聞く
 
-AskUserQuestion で「今のプランはどれか」を**必ず**聞く（選択肢: `Pro` / `Max 5x` / `Max 20x`）。推測で埋めない。
-Pro換算の期待値 =（Pro=1・Max 5x=5・Max 20x=20）× `週次上限の使用率` ÷ 100。使用率が空なら期待値も空。
+AskUserQuestion で「今のプランはどれか」を**必ず**聞く（選択肢: `Pro` / `Max 5x` / `Max 20x` / `Team`）。推測で埋めない。
+Pro換算の期待値 =（Pro=1・Max 5x=5・Max 20x=20・Team=0）× `週次上限の使用率` ÷ 100。使用率が空なら期待値も空。
+判定は Pro / Max を軸にする。**Team の行は判定に使わない**（数式に Team の倍率が無く、使用率があると Pro換算は 0 になる）。Team を選んだ人には A4 でそう伝える。
 
 ### A3. ツールを読み込み、自分と既存行を調べる
 
@@ -75,7 +76,9 @@ ToolSearch  query: "+notion query data sources create pages update page fetch se
 
 ### A6. 読み直して確かめる
 
-`notion-fetch` で書いた行を読み直し、送った全列が一致すること、**`Pro換算` が A2 の期待値と一致すること**を見る。
+`notion-fetch` で書いた行を読み直し、送った全列が一致することを見る。
+`Pro換算` は数式の列で、Notion のツールでは値が読めない（`formulaResult://` の参照だけが返る）。読めた値として扱わず、
+代わりに数式の入力である `プラン` と `週次上限の使用率` が一致することを確かめ、A7 で「Pro換算は画面で期待値 N と一致するか見てほしい」と添える。
 違う列は「列名・送った値・読めた値」を報告する。**勝手に再送しない。**
 
 ### A7. 報告する

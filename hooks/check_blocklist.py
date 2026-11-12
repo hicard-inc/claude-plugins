@@ -29,9 +29,20 @@ def main() -> int:
         print("✗ BLOCKLIST が正規表現として読めません: %s" % e.msg)
         return 1
 
-    files = subprocess.run(["git", "ls-files", "-z"], capture_output=True, text=True).stdout.split("\0")
+    ls = subprocess.run(["git", "ls-files", "-z"], capture_output=True, text=True)
+    files = [p for p in ls.stdout.split("\0") if p]
+    # git が読めない・0件のときに「✓ 0 ファイル」で通さない（守っていない状態で通さない）
+    if ls.returncode != 0 or not files:
+        print("✗ 検査対象のファイルを取れませんでした（git ls-files: exit %d・%d 件）" % (ls.returncode, len(files)))
+        return 1
     hits = []
-    for path in filter(None, files):
+    links = []
+    for path in files:
+        # シンボリックリンクは読まない・通さない。fork の PR は blocklist.yml（pull_request_target）で
+        # secret を持った環境で検査されるので、リンク先（/proc/self/environ 等）を読ませない
+        if os.path.islink(path):
+            links.append(path)
+            continue
         if os.path.splitext(path)[1].lower() not in TEXT_EXT:
             continue
         try:
@@ -42,12 +53,17 @@ def main() -> int:
         except (UnicodeDecodeError, OSError):
             continue
 
+    if links:
+        print("✗ シンボリックリンクは置けません（%d 件）。実体のファイルにする:" % len(links))
+        for p in links:
+            print("    " + p)
     if hits:
         print("✗ 置いてはいけない語が %d 箇所にあります（語は出しません。手元で BLOCKLIST を使って確認する）:" % len(hits))
         for h in hits:
             print("    " + h)
+    if links or hits:
         return 1
-    print("✓ 禁止語 なし（%d ファイル）" % sum(1 for p in files if p))
+    print("✓ 禁止語 なし（%d ファイル）" % len(files))
     return 0
 
 

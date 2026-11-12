@@ -17,7 +17,10 @@ jobs:
         run: python3 hooks/check_versions.py
       - name: 鍵・置いてはいけないファイル（追跡中の全ファイル）
         run: python3 hooks/check_secrets.py --all
+      # fork からの PR には secret が渡らない（BLOCKLIST が空になり必ず落ちる）ので、ここでは飛ばす。
+      # fork の PR の禁止語は blocklist.yml（pull_request_target・必須チェック「blocklist」）が見る
       - name: 禁止語（一覧は Actions secret の BLOCKLIST。ログには場所しか出さない）
+        if: github.event_name == 'push' || github.event.pull_request.head.repo.full_name == github.repository
         env:
           BLOCKLIST: ${{ secrets.BLOCKLIST }}
         run: python3 hooks/check_blocklist.py

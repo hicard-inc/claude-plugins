@@ -11,7 +11,13 @@ else
   echo "hicard: pre-push hook 有効（core.hooksPath=hooks）"
 fi
 
-if [ -z "$(git config --get hicard.blocklist)" ]; then
+case "$(git remote get-url origin 2>/dev/null)" in
+  *hicard-inc/claude-plugins*) IS_FORK=0 ;;
+  *) IS_FORK=1 ;;
+esac
+if [ -z "$(git config --get hicard.blocklist)" ] && [ "$IS_FORK" = "1" ]; then
+  echo "hicard: fork の clone（メンバーの投稿用）。禁止語一覧は不要で、PR の必須チェック blocklist が見る（CONTRIBUTING.md 9章）"
+elif [ -z "$(git config --get hicard.blocklist)" ]; then
   echo "hicard: 🔴 禁止語一覧（git config hicard.blocklist）が未設定。commit / push は止まる。Owner に一覧を聞いて設定する（CONTRIBUTING.md 8章）"
 else
   echo "hicard: 禁止語一覧 設定済み（中身は出さない）"

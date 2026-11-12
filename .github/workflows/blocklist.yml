@@ -1,0 +1,45 @@
+# 禁止語の検査を、fork から来た PR にも効かせる（branch protection の必須チェック「blocklist」）。
+#
+# なぜ別ファイルか: checks.yml は pull_request で動くが、GitHub は fork からの pull_request に
+# Actions の secret を渡さない。BLOCKLIST が空になり、check_blocklist.py は「空なら失敗」なので
+# メンバーの PR は中身に関係なく必ず赤になる。pull_request_target は main 側の定義で動き secret を使える。
+#
+# 🔴 pull_request_target の安全条件（崩さない）:
+#   - 実行するのは main 側（base/）のスクリプトだけ。PR 側（pr/）は「読むデータ」としてしか扱わない
+#     （PR の python・npm・シェルを一切実行しない。PR の hooks/ を呼ばない）
+#   - PR 側の checkout は persist-credentials: false（トークンを .git に残さない）
+#   - permissions は contents: read だけ。書き込み権限を足さない
+#   - このファイル自体の変更は main に入るまで効かない（PR が自分の検査を書き換えられない）
+name: blocklist
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  blocklist:
+    runs-on: ubuntu-latest
+    steps:
+      - name: main 側の検査スクリプトを取る（実行するのはこちらだけ）
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          path: base
+          persist-credentials: false
+      - name: PR 側の中身を取る（データとして読むだけ）
+        if: github.event_name == 'pull_request_target'
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          path: pr
+          persist-credentials: false
+      - name: 禁止語（一覧は Actions secret の BLOCKLIST。ログには場所しか出さない）
+        env:
+          BLOCKLIST: ${{ secrets.BLOCKLIST }}
+          TARGET: ${{ github.event_name == 'pull_request_target' && 'pr' || 'base' }}
+        run: |
+          cd "$TARGET"
+          python3 "$GITHUB_WORKSPACE/base/hooks/check_blocklist.py"

@@ -106,6 +106,7 @@ claude plugin uninstall <plugin>@<marketplace>
 | `tasks` | Notion `[PJ] Tasks` の未完了タスクをメンバー別に見る（`/tasks 名前`・`/tasks 自分`・`/tasks 全員`。空欄なら誰のタスクか質問する） | `/tasks` ／ Claude の自己判断でも起動する |
 | `task-add` | Notion `[PJ] Tasks` にタスクを起票する（必須5項目が揃うまで質問し、書く前に必ず確認を取る） | `/task-add` ／ Claude の自己判断でも起動する |
 | `claude-usage` | 自分の Claude Code の週次使用量を集計し、確認のうえ Notion `[TMP] ClaudeUsage` に自分の行を書く。使用率の記録（statusline への差し込み）は本人が同意したときだけ入れる（`/claude-usage 記録を始める`・`記録を止める`・`状態`） | `/claude-usage`（**人が呼ぶだけ**） |
+| `skill-submit` | 自分が作った Skill を配布に出す。fork から PR を作り、管理者が確認してマージすると全員に届く（GitHub アカウントと `gh` が要る。手順は CONTRIBUTING.md 9 章） | `/skill-submit`（**人が呼ぶだけ**） |
 
 配っている MCP サーバー（[plugins/hicard/.mcp.json](plugins/hicard/.mcp.json)）:
 
@@ -159,6 +160,7 @@ hooks/                              ← pre-push hook と Claude Code hook の�
 ## このリポジトリを直す人へ
 
 **粒度の基準（4層＋3関門）とレビュー手順は [CONTRIBUTING.md](CONTRIBUTING.md) が正本。**
+**メンバーが自分の Skill を配布に出すときは `/hicard:skill-submit`（fork から PR。手順は [CONTRIBUTING.md](CONTRIBUTING.md) の 9 章）。**
 **読まずに足すと必ず混ざる。**
 
 `main` は GitHub 側の branch protection で守られている（**PR 必須・直接 push と force push と削除を禁止・管理者にも適用**。2026-09-05 に public 化して有効にした）。

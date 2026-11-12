@@ -281,11 +281,13 @@ git config core.hooksPath hooks
 |---|---|
 | **読む（clone・インストール）** | **public。**誰でも読める。**新メンバーに招待は要らない**（GitHub アカウントも SSH 鍵も要らない。ただし `marketplace add` の既定は SSH clone なので、先頭に `CLAUDE_CODE_PLUGIN_PREFER_HTTPS=1` を付ける。README 参照） |
 | **write（push）** | **Org Owner のみ。**現在4名（実測 2026-09-04・全員2FA済み）。**collaborator も Org Member も足さない** |
+| **メンバーの投稿（2026-11-12 追加）** | **fork から PR を出す**（9章・`/hicard:skill-submit`）。write は渡さない。**マージできるのは Owner だけなので、取り込むかは Owner が PR を見て決める**（承認数の必須化は入れていない＝2026-11-12 管理者決定。Owner 自身の PR が止まるため） |
 | **`main` の保護（GitHub 側）** | **PR 必須・直接 push 禁止・force push 禁止・削除禁止・管理者にも適用**（`enforce_admins`）。2026-09-05 に設定し、API の GET で確認済み。**Owner でも `main` へは PR を経ないと入らない** |
 | **clone したら1回** | `git config core.hooksPath hooks`。push 前に手元で**版の食い違いと鍵の混入**を見る。**public では push した瞬間に世界に見える**ので、push 前に止められるのはこの hook と下の Push protection だけ。PR テンプレートに有効化のチェック欄がある |
 | **Claude Code から commit / push するとき（2026-09-06 追加）** | このリポジトリの `.claude/settings.json` に **project hook** が入っている。Claude Code をこのフォルダで起動すると、**開いた時点で `core.hooksPath` を自動設定**し、Claude が `git commit` / `git push` を打つ**直前に版・鍵・禁止語を検査して、落ちたらコマンドを止め、理由を Claude に返す**（Claude が本人に伝える）。手順は 8 章 |
 | **Push protection（GitHub 側・2026-09-05 ON）** | Secret scanning ＋ Push protection。**既知の約 200 社のトークン形式は push 時にサーバー側で拒否**される（Owner・admin にも効く。バイパスは可能だが Security タブに記録が残る） |
-| **必須チェック `checks`（Actions・2026-09-05 ON）** | PR ごとに `hooks/check_versions.py`・`hooks/check_secrets.py --all`・`hooks/check_blocklist.py`・**`claude plugin validate --strict`**（公式・2026-09-06 追加。`npm install -g @anthropic-ai/claude-code` してから plugin と marketplace の両方を検査。ログイン不要・実測）が走り、**落ちると `main` にマージできない**（branch protection の required status check）。ローカル hook と同じスクリプトなので判定はずれない |
+| **必須チェック `checks`（Actions・2026-09-05 ON）** | PR ごとに `hooks/check_versions.py`・`hooks/check_secrets.py --all`・`hooks/check_blocklist.py`・**`claude plugin validate --strict`**（公式・2026-09-06 追加。`npm install -g @anthropic-ai/claude-code` してから plugin と marketplace の両方を検査。ログイン不要・実測）が走り、**落ちると `main` にマージできない**（branch protection の required status check）。ローカル hook と同じスクリプトなので判定はずれない。🔴 **fork からの PR では禁止語のステップだけ飛ばす**（GitHub は fork の `pull_request` に secret を渡さないので、BLOCKLIST が空で必ず落ちるため） |
+| **必須チェック `blocklist`（Actions・2026-11-12 追加）** | `.github/workflows/blocklist.yml`。**`pull_request_target` で動くので fork の PR でも BLOCKLIST を使える。**🔴 安全条件: 実行するのは **main 側の** `hooks/check_blocklist.py` だけで、PR 側の中身は別フォルダに取って**読むだけ**（PR のコードは一切実行しない・書き込み権限なし・このファイル自体の変更は main に入るまで効かない）。**この条件を崩す変更（PR 側のスクリプトを実行する・`permissions` を広げる）は入れない** |
 | **禁止語一覧 `BLOCKLIST`** | クライアント名・人名など「パターンで書ける不要な情報」の正規表現（`\|` 区切り・大文字小文字を区別しない）。🔴 **public なので一覧はリポジトリに置かず、Actions の secret に入れる**（`gh secret set BLOCKLIST -R hicard-inc/claude-plugins`・Owner だけが更新できる）。**空だとチェックは失敗する**（守っていない状態で通さない）。ログには当たった場所しか出ない。**一覧に無い語は通る**ので、文脈で決まる情報（報酬額・評価）は人のレビューで見る |
 | **public に切り替えた理由** | private では Org Free の制約で branch protection が使えず（403）、新メンバーごとに outside collaborator の招待が要り、**招待前は誰も clone できなかった**。中身は最初から「全員のマシンに落ちる前提」で書いているので、公開範囲が広がっても入れてよいものの基準（0章）は変わらない |
 
@@ -304,7 +306,7 @@ gh api repos/hicard-inc/claude-plugins --jq '.security_and_analysis | "secret_sc
 gh secret list -R hicard-inc/claude-plugins   # BLOCKLIST が並ぶこと（中身は見えない）
 ```
 
-期待値: `private=false delete_branch_on_merge=true` / `pr_required=true enforce_admins=true force_push=false deletions=false checks=["checks"]` /
+期待値: `private=false delete_branch_on_merge=true` / `pr_required=true enforce_admins=true force_push=false deletions=false checks=["checks","blocklist"]` /
 `secret_scanning=enabled push_protection=enabled` / `BLOCKLIST`。
 
 **禁止語で PR が落ちたとき**: ログの `path:line` を手元で開いて直す。語そのものを確認したいときは Owner に聞く（一覧は secret の中）。
@@ -354,3 +356,35 @@ Claude Code をこのリポジトリのフォルダで起動し（初回は「�
 - GitHub の **push ruleset（ファイルパスで push 自体を拒否）は public の Free では作れない**（2026-09-05 実測: API が 422 "Source public repos cannot have push rules"）。だから手元の層で止める
 - メンバーの `marketplace add` で落ちる clone にもこの `.claude/settings.json` は入るが、**メンバーはそのフォルダで Claude を起動しないので影響しない**
 
+## 9. メンバーが Skill を出す（fork → PR・2026-11-12 追加）
+
+**メンバーは write を持たない（7章）。**自分の GitHub 上に写し（fork）を作り、そこから本体へ PR を出す。
+**取り込むかは Owner が PR を見て決め、マージすると全メンバーに自動で届く**（`hicard` 本体に入る＝全員に配る。任意導入にはしない・2026-11-12 管理者決定）。
+
+### メンバーがやること
+
+GitHub アカウントと `gh`（`gh auth login` 済み）が要る。**持っていない人はこの経路を使えない**ので、Owner に Skill のフォルダを渡して代わりに出してもらう。
+
+```
+/hicard:skill-submit <Skill のフォルダのパス>
+```
+
+Skill が fork の用意 → 0〜5章と4関門の点検 → 版上げと検査 → **本人の確認** → push → PR まで進める。手で打つ場合の手順も同じで、作業場所は `~/work/claude-plugins-fork`（origin＝自分の fork、upstream＝本体）。
+
+| 手元の検査 | fork の clone での動き |
+|---|---|
+| `pre-push`（版・`main` 直 push・鍵） | Owner と同じ。`git config core.hooksPath hooks` を入れる |
+| `claude_guard.sh`（Claude Code をこのフォルダで起動したとき） | 版・鍵は同じ。**禁止語一覧は持たないので見ない**（origin が本体でなければ fork とみなす）。禁止語は PR の必須チェック `blocklist` が見る |
+
+🔴 **fork は public。push した時点で誰でも読める。**禁止語の機械検査は push の後（PR）にしか走らないので、**0章の点検は push の前に本人と Claude が目でやる。**`/hicard:skill-submit` は push の前に必ず確認を取る。
+
+### Owner がやること（メンバーの PR を受けたとき）
+
+1. **初めての投稿者は Actions の実行承認が要る**（PR 画面の「Approve and run」）。押すまで `checks` は待ちのまま
+2. `checks` と `blocklist` が両方緑であることを見る
+3. **機械が見ないものを目で見る**: 0章（報酬・評価など文脈で決まる情報）／3章の関門1と関門4（PR 本文に実行出力があるか）／
+   **振る舞いの危険**（全員の Claude が各自の権限で実行する。外部への送信・削除・広い Bash・Notion などへの書き込みを確認なしで行う手順が無いか）
+4. 版が他の PR とぶつかったら（同時に複数の PR が同じ版を名乗る）、後にマージする方で版を上げ直してもらう
+5. マージしたら、その場で `claude plugin marketplace update hicard-plugins` → `claude plugin update hicard@hicard-plugins`（6章）
+
+**まずいものが入ったとき**: revert の PR を出して版を上げる。次に各自が Claude Code に最初の指示を出してから 0〜10 分で上書きされる（README「更新」）。

@@ -39,7 +39,15 @@ if [ -f .claude-plugin/marketplace.json ] && command -v claude >/dev/null 2>&1; 
 fi
 
 BL="$(git config --get hicard.blocklist)"
-if [ -z "$BL" ]; then
+# origin が本体（hicard-inc/claude-plugins）でなければ、メンバーの fork の clone（CONTRIBUTING.md 9章）。
+# メンバーは一覧を持たないので止めない。禁止語は PR を出したときに GitHub の必須チェック「blocklist」が見る
+case "$(git remote get-url origin 2>/dev/null)" in
+  *hicard-inc/claude-plugins*) IS_FORK=0 ;;
+  *) IS_FORK=1 ;;
+esac
+if [ -z "$BL" ] && [ "$IS_FORK" = "1" ]; then
+  echo "hicard: fork の clone なので禁止語はここでは見ない（PR の必須チェック blocklist が見る）。0章の『入れてはいけないもの』は自分で確かめる" >&2
+elif [ -z "$BL" ]; then
   OUT="${OUT}✗ 禁止語一覧（git config hicard.blocklist）が未設定。Owner に一覧を聞いて次を実行する:"$'\n'"    git config hicard.blocklist '語1|語2'"$'\n'
 else
   R="$(BLOCKLIST="$BL" python3 hooks/check_blocklist.py 2>&1)" || OUT="$OUT$R"$'\n'

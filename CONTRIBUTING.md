@@ -369,6 +369,8 @@ GitHub アカウントと `gh`（`gh auth login` 済み）が要る。**持っ�
 /hicard:skill-submit <Skill のフォルダのパス>
 ```
 
+**コマンド（`~/.claude/commands/<名前>.md`）も同じ経路で出せる**（2026-11-13 追加）。`skills/<名前>/SKILL.md` に変えて入れ、`/<名前>` で同じように動く。副作用のあるものには `disable-model-invocation: true` を付ける。
+
 Skill が fork の用意 → 0〜5章と4関門の点検 → 版上げと検査 → **本人の確認** → push → PR まで進める。手で打つ場合の手順も同じで、作業場所は `~/work/claude-plugins-fork`（origin＝自分の fork、upstream＝本体）。
 
 | 手元の検査 | fork の clone での動き |

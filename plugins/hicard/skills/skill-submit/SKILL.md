@@ -1,11 +1,11 @@
 ---
 name: skill-submit
-description: 自分が作った Skill を hicard の配布 plugin に入れてもらうため、fork から Pull Request を出す。管理者が確認してマージすると全メンバーに自動で届く
-argument-hint: "[Skill のフォルダのパス、または名前]"
+description: 自分が作った Skill（またはコマンドの .md）を hicard の配布 plugin に入れてもらうため、fork から Pull Request を出す。コマンドは Skill の形に変えて出す。管理者が確認してマージすると全メンバーに自動で届く
+argument-hint: "[Skill のフォルダ・コマンドの .md のパス、または名前]"
 disable-model-invocation: true
 ---
 
-# Skill を配布に出す: $ARGUMENTS
+# Skill・コマンドを配布に出す: $ARGUMENTS
 
 **fork（自分の GitHub 上の写し・public）に push し、本体へ PR を出す。**取り込むかは管理者が PR を見て決める。
 判断の基準はリポジトリの `CONTRIBUTING.md` が正本（ここに書き写さない）。作業場所は `$HOME/work/claude-plugins-fork`（以下 `$F`）。
@@ -16,7 +16,10 @@ git はすべて `git -C "$F"` で打つ。**途中で止まったら迂回せ�
 - `gh auth status` が通ること。通らなければ `gh auth login` を案内して止まる（GitHub アカウントが要る）
 - `git --version` と `python3 --version` が通ること
 
-## STEP 2 作業場所を用意する
+## STEP 2 対象を決め、作業場所を用意する
+
+- 対象: パスならそれを使う。名前だけなら `~/.claude/skills/<名前>/` → `~/.claude/commands/<名前>.md` の順に探す（両方あれば本人に聞く。どちらも無ければ止まる）
+- **コマンド（.md 1枚）なら Skill の形に変えて出す。**Skill とコマンドは同じ `/<名前>` で動く（STEP 4 の1で変換する）
 
 - `$F` が無い: `gh repo fork hicard-inc/claude-plugins --clone=false` → `git clone https://github.com/<自分のID>/claude-plugins "$F"`
   → `git -C "$F" remote add upstream https://github.com/hicard-inc/claude-plugins` → `git -C "$F" config core.hooksPath hooks`
@@ -26,7 +29,7 @@ git はすべて `git -C "$F"` で打つ。**途中で止まったら迂回せ�
 ## STEP 3 出してよいかを見る（ここが本題）
 
 `$F/CONTRIBUTING.md` の **0章・1章・2章・3章・4章・5章** を読み、対象フォルダの**全ファイル**を開いて当てはめる
-（SKILL.md だけで判断しない。grep で0件でも目視する）。結果を表で本人に見せる:
+（SKILL.md だけで判断しない。grep で0件でも目視する。コマンドなら .md 本文と、本文が読む・実行するファイルも見る）。結果を表で本人に見せる:
 
 | 見るもの | 落ちる例 |
 |---|---|
@@ -37,12 +40,15 @@ git はすべて `git -C "$F"` で打つ。**途中で止まったら迂回せ�
 | 4章・5章 | `${CLAUDE_PLUGIN_ROOT}` を使わないパス／`allowed-tools` に MCP ツール名 |
 | 2章 サイズ | SKILL.md が 6,700 字超（≒5,000 トークン）。超えたら参照資料へ出す |
 | 名前 | `$F/plugins/hicard/skills/` に同名がある |
+| 自動で動いてよいか | 書き込み・送信・削除・外部投稿をするのに `disable-model-invocation: true` が無い（コマンドからの変換では必ずこの行で付けたかを見せる） |
 
 **1つでも落ちたら、直し方を示して止まる。**一般化して直せるものは直した差分を見せ、本人の了承を取る。
 
 ## STEP 4 入れる・版を上げる・検査する
 
-1. `$F/plugins/hicard/skills/<名前>/` へコピーし、参照パスを4章の形に直す
+1. `$F/plugins/hicard/skills/<名前>/` へコピーし、参照パスを4章の形に直す。
+   **コマンドの場合**は `<名前>.md` を `skills/<名前>/SKILL.md` として置き、frontmatter に `name: <名前>` と `description:`（無ければ本文から1文で書き、本人に見せる）を足す。
+   元の frontmatter（`argument-hint`・`allowed-tools` など）と本文・`$ARGUMENTS` は消さずに残す。副作用があるなら `disable-model-invocation: true` を足す
 2. `plugins/hicard/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を**両方** patch +1（python で JSON として書き換える）
 3. `$F` で次を全部通す。落ちたら直す（`--no-verify` は使わない）:
    `python3 hooks/check_versions.py` / `python3 hooks/check_secrets.py --all` /
@@ -61,4 +67,4 @@ AskUserQuestion で「push して PR を出す／やめる」を聞く。出す�
 ## STEP 6 報告
 
 PR の URL を出し、次を伝える: 初めての PR は管理者が Actions の実行を承認するまで検査が「待ち」になる／
-マージされると全メンバーに自動で届く／届いたら手元の元の Skill は退避してよい（同名が2つ並ぶため）。
+マージされると全メンバーに自動で届く／届いたら手元の元の Skill・コマンドは退避してよい（同名が2つ並ぶため）。

@@ -19,52 +19,43 @@ git はすべて `git -C "$F"` で打つ。**途中で止まったら迂回せ�
 ## STEP 2 対象を決め、作業場所を用意する
 
 - 対象: パスならそれを使う。名前だけなら `~/.claude/skills/<名前>/` → `~/.claude/commands/<名前>.md` の順に探す（両方あれば本人に聞く。どちらも無ければ止まる）
-- **コマンド（.md 1枚）なら Skill の形に変えて出す。**Skill とコマンドは同じ `/<名前>` で動く（STEP 4 の1で変換する）
+- **コマンド（.md 1枚）なら Skill の形に変えて出す。**Skill とコマンドは同じ `/<名前>` で動く（STEP 3 で変換する）
 
 - `$F` が無い: `gh repo fork hicard-inc/claude-plugins --clone=false` → `git clone https://github.com/<自分のID>/claude-plugins "$F"`
   → `git -C "$F" remote add upstream https://github.com/hicard-inc/claude-plugins` → `git -C "$F" config core.hooksPath hooks`
 - `$F` がある: `git -C "$F" status --short` が空であることを見る（空でなければ止まって聞く）
 - 共通: `git -C "$F" fetch upstream` → `git -C "$F" switch -c skill/<名前> upstream/main`
 
-## STEP 3 出してよいかを見る（ここが本題）
+## STEP 3 fork にコピーする
 
-`$F/CONTRIBUTING.md` の **0章・1章・2章・3章・4章・5章** を読み、対象フォルダの**全ファイル**を開いて当てはめる
-（SKILL.md だけで判断しない。grep で0件でも目視する。コマンドなら .md 本文と、本文が読む・実行するファイルも見る）。結果を表で本人に見せる:
+`$F/plugins/hicard/skills/<名前>/` へコピーする（`$F/plugins/hicard/skills/` に同名があれば止まる）。
+**コマンドの場合**は `<名前>.md` を `skills/<名前>/SKILL.md` として置き、frontmatter に `name: <名前>` と `description:`（無ければ本文から1文で書き、本人に見せる）を足す。
+元の frontmatter（`argument-hint`・`allowed-tools` など）と本文・`$ARGUMENTS` は消さずに残す。以降の書き換えはすべてコピー先で行い、元のファイルには触らない。
 
-| 見るもの | 落ちる例 |
-|---|---|
-| 0章 入れてはいけないもの | 個人名・その人の状態・報酬・評価・取引先・財務の実データ・鍵・案件名 |
-| 3章 関門1 | 自分しか使わない |
-| 3章 関門3 | 配れないファイル・別リポジトリを読む |
-| 3章 関門4 | 本人が1回動かして出力を見ていない（見ていなければ、今ここで1回動かしてもらう） |
-| 4章・5章 | `${CLAUDE_PLUGIN_ROOT}` を使わないパス／`allowed-tools` に MCP ツール名 |
-| 2章 サイズ | SKILL.md が 6,700 字超（≒5,000 トークン）。超えたら参照資料へ出す |
-| 名前 | `$F/plugins/hicard/skills/` に同名がある |
-| 自動で動いてよいか | 書き込み・送信・削除・外部投稿をするのに `disable-model-invocation: true` が無い（コマンドからの変換では必ずこの行で付けたかを見せる） |
+## STEP 4 配布前レビュー（ここが本題）
 
-**1つでも落ちたら、直し方を示して止まる。**一般化して直せるものは直した差分を見せ、本人の了承を取る。
+`${CLAUDE_PLUGIN_ROOT}/skills/skill-review/SKILL.md` を読み、**STEP 2〜6 をコピー先に当てる**（関門1・4の確認、機械の点検、独立レビュー、本人の了承を取って直す）。
+「落とす」が1件でも残ったら、直し方を示して止まる（PR は出さない）。
 
-## STEP 4 入れる・版を上げる・検査する
+## STEP 5 版を上げて検査する
 
-1. `$F/plugins/hicard/skills/<名前>/` へコピーし、参照パスを4章の形に直す。
-   **コマンドの場合**は `<名前>.md` を `skills/<名前>/SKILL.md` として置き、frontmatter に `name: <名前>` と `description:`（無ければ本文から1文で書き、本人に見せる）を足す。
-   元の frontmatter（`argument-hint`・`allowed-tools` など）と本文・`$ARGUMENTS` は消さずに残す。副作用があるなら `disable-model-invocation: true` を足す
-2. `plugins/hicard/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を**両方** patch +1（python で JSON として書き換える）
+1. `plugins/hicard/.claude-plugin/plugin.json` と `.claude-plugin/marketplace.json` の `version` を**両方** patch +1（python で JSON として書き換える）
+2. `git -C "$F" add plugins/hicard/skills/<名前> plugins/hicard/.claude-plugin/plugin.json .claude-plugin/marketplace.json`（add しないと新しいファイルが検査に入らない）
 3. `$F` で次を全部通す。落ちたら直す（`--no-verify` は使わない）:
    `python3 hooks/check_versions.py` / `python3 hooks/check_secrets.py --all` /
    `claude plugin validate --strict plugins/hicard` / `claude plugin validate --strict .`
 
-## STEP 5 push と PR（本人の確認を取ってから）
+## STEP 6 push と PR（本人の確認を取ってから）
 
-**push した瞬間に public の fork で誰でも読める。**`git -C "$F" diff --stat upstream/main` と STEP 3 の表を見せ、
+**push した瞬間に public の fork で誰でも読める。**`git -C "$F" diff --cached --stat upstream/main` と STEP 4 の結果の表を見せ、
 AskUserQuestion で「push して PR を出す／やめる」を聞く。出すと決まったら:
 
-1. `git -C "$F" add plugins/hicard/skills/<名前> plugins/hicard/.claude-plugin/plugin.json .claude-plugin/marketplace.json` → commit
+1. `git -C "$F" commit`（STEP 5 で add 済み）
 2. `git -C "$F" push -u origin skill/<名前>`
 3. `gh pr create -R hicard-inc/claude-plugins --base main --head <自分のID>:skill/<名前>`。
-   本文は `$F/.github/pull_request_template.md` の形で、**何をする Skill か・誰が使うか（関門1）・関門4 の実行出力**を書く
+   本文は `$F/.github/pull_request_template.md` の形で、**何をする Skill か・誰が使うか（関門1）・関門4 の実行出力・STEP 4 の結果の表**を書く（表に個人名・手元のパスが残っていたら伏せる。PR は誰でも読める）
 
-## STEP 6 報告
+## STEP 7 報告
 
 PR の URL を出し、次を伝える: 初めての PR は管理者が Actions の実行を承認するまで検査が「待ち」になる／
 マージされると全メンバーに自動で届く／届いたら手元の元の Skill・コマンドは退避してよい（同名が2つ並ぶため）。

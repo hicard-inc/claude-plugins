@@ -9,3 +9,4 @@
 - [ ] 個人名・クライアント名・報酬・評価・鍵を入れていない（CONTRIBUTING.md 0章）
 - [ ] `plugins/` を触った場合、`plugin.json` と `marketplace.json` の version を両方上げた
 - [ ] Skill を足した場合: 誰が使うか（関門1）と、自分で1回動かした出力（関門4）を「何を変えたか」に貼った（CONTRIBUTING.md 3章・9章）
+- [ ] Skill・コマンドを足した場合: `/hicard:skill-review` の結果の表を「何を変えたか」に貼った（落とすが0件）

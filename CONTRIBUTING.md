@@ -371,7 +371,9 @@ GitHub アカウントと `gh`（`gh auth login` 済み）が要る。**持っ�
 
 **コマンド（`~/.claude/commands/<名前>.md`）も同じ経路で出せる**（2026-11-13 追加）。`skills/<名前>/SKILL.md` に変えて入れ、`/<名前>` で同じように動く。副作用のあるものには `disable-model-invocation: true` を付ける。
 
-Skill が fork の用意 → 0〜5章と4関門の点検 → 版上げと検査 → **本人の確認** → push → PR まで進める。手で打つ場合の手順も同じで、作業場所は `~/work/claude-plugins-fork`（origin＝自分の fork、upstream＝本体）。
+Skill が fork の用意 → コピー → **配布前レビュー（`skill-review`）** → 版上げと検査 → **本人の確認** → push → PR まで進める。
+
+**配布前レビュー（2026-11-13 追加）**: `/hicard:skill-review <パス>` は PR を出さずに単独でも回せる。見る観点は7つ（公開してよいか・属人性・手元のファイル・手元だけの設定・外部サービスと道具と権限・動作の安全・配布物としての作り）。判定基準の正本は `plugins/hicard/skills/skill-review/checklist.md`（**0〜5章を変えたら checklist.md も直す**）。機械の点検（`scan.py`）と、書いた人の会話を知らないサブエージェントの独立レビューを合わせ、直す差分は本人の了承を取ってから当てる。全員の前提にしてよいのは macOS・`python3`（標準ライブラリ）・`git`・Claude Code と plugin が配る Notion まで。それ以外を使うものは「確かめて、無ければ止まって案内する」手順があれば通す（2026-11-13 管理者決定）。Owner が届いた PR を見るときも同じ checklist.md で判定する。手で打つ場合の手順も同じで、作業場所は `~/work/claude-plugins-fork`（origin＝自分の fork、upstream＝本体）。
 
 | 手元の検査 | fork の clone での動き |
 |---|---|

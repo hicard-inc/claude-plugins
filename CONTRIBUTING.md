@@ -385,8 +385,13 @@ Skill が fork の用意 → コピー → **配布前レビュー（`skill-revi
 ### Owner がやること（メンバーの PR を受けたとき）
 
 1. **初めての投稿者は Actions の実行承認が要る**（PR 画面の「Approve and run」）。押すまで `checks` は待ちのまま
-2. `checks` と `blocklist` が両方緑であることを見る
-3. **機械が見ないものを目で見る**: 0章（報酬・評価など文脈で決まる情報）／3章の関門1と関門4（PR 本文に実行出力があるか）／
+2. `checks` と `blocklist` が両方緑であることを見る。**fork から Skill を変える PR の `blocklist` は、本文に配布前レビューの結果があるかも見る**
+   （2026-11-13 追加・`hooks/check_pr_review.py`）。本文の形の正本は `plugins/hicard/skills/skill-submit/pr_body.md`
+   （何を足すか／いつ・誰が使うか＝関門1／前提と副作用／手順の要約／動かした結果＝関門4／7観点の区分と根拠／直した点／残した要確認）。
+   見出しが無い・表に空欄がある・区分が「落とす」のままなら赤になり、Details の Summary に足りないところと案内が出る。本文を直すと自動でやり直す。
+   **機械が見るのは埋まっているかどうかだけ**で、中身が正しいかは見ない。`scan.py` の結果も同じ Summary に出る（合否には使わない）
+3. **本文を読んで判定する**（基準は `skill-review/checklist.md`）。本文の根拠「ファイル:行」は Files changed で数か所開いて合っているかを見る。
+   機械が見ないもの: 0章（報酬・評価など文脈で決まる情報）／3章の関門1と関門4／
    **振る舞いの危険**（全員の Claude が各自の権限で実行する。外部への送信・削除・広い Bash・Notion などへの書き込みを確認なしで行う手順が無いか）
 4. 版が他の PR とぶつかったら（同時に複数の PR が同じ版を名乗る）、後にマージする方で版を上げ直してもらう
 5. マージしたら、その場で `claude plugin marketplace update hicard-plugins` → `claude plugin update hicard@hicard-plugins`（6章）

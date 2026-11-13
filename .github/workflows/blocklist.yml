@@ -9,16 +9,25 @@
 #     （PR の python・npm・シェルを一切実行しない。PR の hooks/ を呼ばない）
 #   - PR 側の checkout は persist-credentials: false（トークンを .git に残さない）
 #   - python は -I（隔離モード）で動かす。PR 側に置かれた .py を import させない
-#   - permissions は contents: read だけ。書き込み権限を足さない
+#   - permissions は読み取り（contents・pull-requests）だけ。書き込み権限を足さない（PR へのコメントもしない）
+#   - PR の本文・タイトルを `${{ }}` で run に埋め込まない（本文はスクリプトがイベントの JSON から読む）
 #   - このファイル自体の変更は main に入るまで効かない（PR が自分の検査を書き換えられない）
+#
+# 2026-11-13 追加: fork から Skill を足す・変える PR は、本文に配布前レビューの結果が無ければ赤にする
+# （hooks/check_pr_review.py。本文の形の正本は plugins/hicard/skills/skill-submit/pr_body.md）。
+# 本文を直したらやり直すため edited でも動かす。
 name: blocklist
 on:
   pull_request_target:
-    types: [opened, synchronize, reopened]
+    types: [opened, synchronize, reopened, edited]
   push:
     branches: [main]
 permissions:
   contents: read
+  pull-requests: read
+concurrency:
+  group: blocklist-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
 jobs:
   blocklist:
     runs-on: ubuntu-latest
@@ -47,3 +56,9 @@ jobs:
         run: |
           cd "$TARGET"
           python3 -I "$GITHUB_WORKSPACE/base/hooks/check_blocklist.py"
+      - name: 配布前レビューの結果が PR 本文にあるか（fork から Skill を変える PR だけ。機械の点検は Summary に出す）
+        if: ${{ !cancelled() && github.event_name == 'pull_request_target' }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          PR_DIR: ${{ github.workspace }}/pr
+        run: python3 -I "$GITHUB_WORKSPACE/base/hooks/check_pr_review.py"

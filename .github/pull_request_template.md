@@ -9,4 +9,6 @@
 - [ ] 個人名・クライアント名・報酬・評価・鍵を入れていない（CONTRIBUTING.md 0章）
 - [ ] `plugins/` を触った場合、`plugin.json` と `marketplace.json` の version を両方上げた
 - [ ] Skill を足した場合: 誰が使うか（関門1）と、自分で1回動かした出力（関門4）を「何を変えたか」に貼った（CONTRIBUTING.md 3章・9章）
-- [ ] Skill・コマンドを足した場合: `/hicard:skill-review` の結果の表を「何を変えたか」に貼った（落とすが0件）
+
+<!-- fork から Skill・コマンドを出す PR は、この形ではなく plugins/hicard/skills/skill-submit/pr_body.md の形で本文を書く
+     （/hicard:skill-submit が自動で作る。見出しと配布前レビューの表が無いと、必須チェック blocklist が赤になる） -->

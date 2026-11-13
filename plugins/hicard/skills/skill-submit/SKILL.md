@@ -47,15 +47,19 @@ git はすべて `git -C "$F"` で打つ。**途中で止まったら迂回せ�
 
 ## STEP 6 push と PR（本人の確認を取ってから）
 
-**push した瞬間に public の fork で誰でも読める。**`git -C "$F" diff --cached --stat upstream/main` と STEP 4 の結果の表を見せ、
-AskUserQuestion で「push して PR を出す／やめる」を聞く。出すと決まったら:
+**push した瞬間に public の fork で誰でも読める。**
 
-1. `git -C "$F" commit`（STEP 5 で add 済み）
-2. `git -C "$F" push -u origin skill/<名前>`
-3. `gh pr create -R hicard-inc/claude-plugins --base main --head <自分のID>:skill/<名前>`。
-   本文は `$F/.github/pull_request_template.md` の形で、**何をする Skill か・誰が使うか（関門1）・関門4 の実行出力・STEP 4 の結果の表**を書く（表に個人名・手元のパスが残っていたら伏せる。PR は誰でも読める）
+1. PR の本文を作る。形は `$F/plugins/hicard/skills/skill-submit/pr_body.md`（**見出しと表の行の名前を変えない**。必須チェック `blocklist` が確かめる）。
+   確認者が**ファイルを開かずに本文だけで取り込むかを決められる**ように、全部の節を埋める（無いものは「なし」）:
+   STEP 4 の関門1・4 の答えと実行出力、7観点それぞれの区分（直した後）と根拠「ファイル:行」、直した点、残した要確認。
+   個人名・手元のパス・ID は伏せる（PR は誰でも読める）。`$F` の外の一時ファイル（`mktemp`）に書く
+2. `git -C "$F" diff --cached --stat upstream/main` と本文の全文を見せ、AskUserQuestion で「push して PR を出す／やめる」を聞く。出すと決まったら:
+3. `git -C "$F" commit`（STEP 5 で add 済み）→ `git -C "$F" push -u origin skill/<名前>`
+4. `gh pr create -R hicard-inc/claude-plugins --base main --head <自分のID>:skill/<名前> --title "<名前> を追加" --body-file <1 の一時ファイル>`
 
 ## STEP 7 報告
 
-PR の URL を出し、次を伝える: 初めての PR は管理者が Actions の実行を承認するまで検査が「待ち」になる／
+PR の URL を出し、次を伝える: 必須チェック `blocklist` が赤なら、検査の Details（Summary）に足りない見出し・空欄が出る。
+本文を直して `gh pr edit <番号> -R hicard-inc/claude-plugins --body-file <ファイル>` で上書きすると自動でやり直される／
+初めての PR は管理者が Actions の実行を承認するまで検査が「待ち」になる／
 マージされると全メンバーに自動で届く／届いたら手元の元の Skill・コマンドは退避してよい（同名が2つ並ぶため）。

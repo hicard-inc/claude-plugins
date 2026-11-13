@@ -12,7 +12,7 @@ jobs:
   checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: 版の食い違い（marketplace.json と plugin.json）
         run: python3 hooks/check_versions.py
       - name: 鍵・置いてはいけないファイル（追跡中の全ファイル）

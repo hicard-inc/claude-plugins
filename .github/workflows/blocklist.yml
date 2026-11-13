@@ -8,6 +8,7 @@
 #   - 実行するのは main 側（base/）のスクリプトだけ。PR 側（pr/）は「読むデータ」としてしか扱わない
 #     （PR の python・npm・シェルを一切実行しない。PR の hooks/ を呼ばない）
 #   - PR 側の checkout は persist-credentials: false（トークンを .git に残さない）
+#   - python は -I（隔離モード）で動かす。PR 側に置かれた .py を import させない
 #   - permissions は contents: read だけ。書き込み権限を足さない
 #   - このファイル自体の変更は main に入るまで効かない（PR が自分の検査を書き換えられない）
 name: blocklist
@@ -36,10 +37,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           path: pr
           persist-credentials: false
+          # actions/checkout は pull_request_target での fork の checkout を既定で拒否する（2026-11-13 実測）。
+          # ここでは PR 側を「読むだけ」で実行しないので明示的に許可する。下の安全条件を崩す変更は入れない
+          allow-unsafe-pr-checkout: true
       - name: 禁止語（一覧は Actions secret の BLOCKLIST。ログには場所しか出さない）
         env:
           BLOCKLIST: ${{ secrets.BLOCKLIST }}
           TARGET: ${{ github.event_name == 'pull_request_target' && 'pr' || 'base' }}
         run: |
           cd "$TARGET"
-          python3 "$GITHUB_WORKSPACE/base/hooks/check_blocklist.py"
+          python3 -I "$GITHUB_WORKSPACE/base/hooks/check_blocklist.py"

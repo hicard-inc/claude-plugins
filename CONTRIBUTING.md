@@ -363,7 +363,7 @@ Claude Code をこのリポジトリのフォルダで起動し（初回は「�
 
 ### メンバーがやること
 
-GitHub アカウントと `gh`（`gh auth login` 済み）が要る。**持っていない人はこの経路を使えない**ので、Owner に Skill のフォルダを渡して代わりに出してもらう。
+GitHub アカウントと `gh`（`gh auth login` 済み）が要る。**持っていない人は対象外**（Owner が代わりに出す運用はしない・2026-11-13 管理者決定）。
 
 ```
 /hicard:skill-submit <Skill のフォルダのパス>

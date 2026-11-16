@@ -17,16 +17,18 @@ import glob
 import json
 import os
 
-VERSION = "0.1.1"
+VERSION = "0.1.2"
 JST = dt.timezone(dt.timedelta(hours=9))
 # Team は Notion の Pro換算の数式に倍率が無く 0 になる（Team は判定に使わない）
 PLANS = {"Pro": 1, "Max 5x": 5, "Max 20x": 20, "Team": 0}
 
 # API 標準単価（USD / 100万トークン）。2026-10-19 に claude-api Skill（2026-10-06 時点のキャッシュ）で確認。
+# fable-5-2 は 2026-11-16 に claude-api Skill（2026-11-03 時点のキャッシュ）で確認（$8 / $40・キャッシュ読み込み $0.20）。
 # (入力, 出力, キャッシュ読み込み)。キャッシュ書き込みは 5分=入力×1.25・1時間=入力×2。
 # haiku-5-5 / opus-5 / sonnet-5 / 4系のキャッシュ読み込みは「入力×0.1」の一般則から算出（個別の公表値は未確認）。
 PRICES = {
     "claude-opus-5-5": (4.00, 20.00, 0.20),
+    "claude-fable-5-2": (8.00, 40.00, 0.20),
     "claude-fable-5-1": (10.00, 50.00, 0.25),
     "claude-sonnet-5-5": (2.00, 10.00, 0.20),
     "claude-haiku-5-5": (0.10, 0.50, 0.01),

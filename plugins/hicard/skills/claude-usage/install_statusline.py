@@ -32,6 +32,8 @@ ORIGINAL = STATE_DIR / "statusline_original.json"
 BUNDLED = pathlib.Path(__file__).resolve().parent / "statusline_logger.py"
 FIXED = STATE_DIR / "statusline_logger.py"
 MARK = "statusline_logger.py"
+STALE_DAYS_EMPTY = 1  # 差し込みからこの日数たっても記録が無ければ注意を出す
+STALE_DAYS_LAST = 7   # 最後の記録からこの日数たったら注意を出す
 
 
 def load_settings():
@@ -74,13 +76,47 @@ def cmd_status():
     if FIXED.exists():
         same = filecmp.cmp(FIXED, BUNDLED, shallow=False) if BUNDLED.exists() else None
         print(f"記録スクリプト（コピー）: あり・配布版と{'同じ' if same else '違う（install をもう一度実行すると新しくなる）'}")
+    last = None
     if log.exists():
         lines = log.read_text(encoding="utf-8").splitlines()
-        last = json.loads(lines[-1])["ts"] if lines else "-"
-        print(f"記録ファイル: {len(lines)} 行・最終 {last}")
+        last = dt.datetime.fromisoformat(json.loads(lines[-1])["ts"]) if lines else None
+        print(f"記録ファイル: {len(lines)} 行・最終 {last.isoformat() if last else '-'}")
     else:
         print("記録ファイル: まだ無い")
+    for line in stale_warning(installed(sl), last):
+        print(line)
     return 0
+
+
+def stale_warning(is_installed, last, now=None):
+    """差し込み済みなのに記録が無い・止まっているときの注意（表示用の行）。
+
+    差し込んだ時刻は statusline_original.json の更新時刻で見る（install が毎回書き直す。
+    記録スクリプトのコピーは copy2 で配布元の時刻を引き継ぐので使えない）。
+    """
+    if not is_installed:
+        return []
+    now = now or dt.datetime.now(dt.timezone.utc)
+    if last is None:
+        if not ORIGINAL.exists():
+            return []
+        since = dt.datetime.fromtimestamp(ORIGINAL.stat().st_mtime, dt.timezone.utc)
+        days = (now - since).days
+        if days < STALE_DAYS_EMPTY:
+            return []
+        head = f"⚠ 差し込みから {days} 日たっても記録が1行も無い。"
+    else:
+        days = (now - last).days
+        if days < STALE_DAYS_LAST:
+            return []
+        head = f"⚠ 最後の記録から {days} 日、記録が増えていない（その間 Claude を使っていたなら止まっている）。"
+    return [
+        head,
+        "  考えられる原因: statusline を表示しない画面で使っている（VS Code 拡張・デスクトップアプリ等。未確認）／"
+        "statusline に使用率が届かないプラン・ログイン方法",
+        "  確かめ方: ターミナルで claude を起動して数回やり取りし、もう一度「状態」を見る。"
+        "それでも増えなければ管理者に相談する",
+    ]
 
 
 def cmd_install(dry):
